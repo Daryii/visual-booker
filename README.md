@@ -1,6 +1,6 @@
 # Visual Booker – WordPress Booking Plugin (Starter Kit)
 
-This is a starter WordPress plugin that lets you upload any image — a floor plan, a market map, a venue layout — and place bookable spots on it. Visitors can then click on available spots and submit a booking through a simple form.
+This is a starter WordPress plugin that lets you upload any image (a floor plan, a market map, a venue layout) and place bookable spots on it. Visitors can then click on available spots and submit a booking through a simple form.
 
 We built this as a foundation for you to learn from and extend. The core flow works end to end, but there's plenty of room to improve it and add features.
 
@@ -16,7 +16,7 @@ It's inspired by [SeatReg](https://wordpress.org/plugins/seatreg/), but written 
 4. Use the "Add Spot" button to start placing spots on the image. You can drag them around, resize them, and edit their label, price, color, and type.
 5. Hit "Save All Spots" when you're happy with the layout.
 6. Copy the shortcode from the sidebar (something like `[visual_booker id="42"]`) and paste it into any page or post.
-7. That's it — visitors can now select spots and book them.
+7. That's it - visitors can now select spots and book them.
 
 ---
 
@@ -34,7 +34,7 @@ visual-booker/
 │   └── front-end.php              The HTML template visitors see when the shortcode loads.
 ├── admin/
 │   ├── css/admin.css              Styles for the drag-and-drop builder.
-│   └── js/admin.js                All the builder logic — dragging, resizing, editing, saving spots.
+│   └── js/admin.js                All the builder logic: dragging, resizing, editing, saving spots.
 ├── public/
 │   ├── css/public.css             Styles for the front-end booking interface.
 │   └── js/public.js               Spot selection, modal, and booking form submission.
@@ -57,9 +57,9 @@ visual-booker/
 
 The plugin creates two tables on activation:
 
-**wp_vb_spots** stores each bookable spot — its position, size, label, type (seat, table, zone, etc.), price, color, and status (open, locked, or maintenance).
+**wp_vb_spots** stores each bookable spot: its position, size, label, type (seat, table, zone, etc.), price, color, and status (open, locked, or maintenance).
 
-**wp_vb_bookings** stores each booking — which spot, which layout, the customer's name/email/phone, the booking status (pending, approved, or cancelled), and any notes.
+**wp_vb_bookings** stores each booking: which spot, which layout, the customer's name/email/phone, the booking status (pending, approved, or cancelled), and any notes.
 
 ---
 
@@ -88,7 +88,7 @@ These are roughly ordered from simpler to more involved. Pick whatever interests
 - Add circle-shaped spots alongside the existing rectangles (hint: it's mostly CSS).
 - Send a confirmation email to the customer, not just the admin.
 - Add a button to export bookings as a CSV file.
-- Let admins define custom legends — like "VIP" in gold, "Regular" in green, "Accessible" in blue — and display them on the front end.
+- Let admins define custom legends (like "VIP" in gold, "Regular" in green, "Accessible" in blue) and display them on the front end.
 - Auto-number spots when placing them in bulk.
 
 **Medium-effort features:**
@@ -96,7 +96,7 @@ These are roughly ordered from simpler to more involved. Pick whatever interests
 - Support multiple rooms or sections per layout, with tabs to switch between them (like SeatReg does).
 - Add zoom and pan for large layouts, especially on mobile.
 - Let admins define custom form fields per layout (e.g., "T-shirt size" or "Dietary preference"), stored in the booking's meta_json column.
-- Set booking limits — max spots per booking, max bookings per email address, or time-based availability windows.
+- Set booking limits: max spots per booking, max bookings per email address, or time-based availability windows.
 - Use the WordPress Heartbeat API to update spot availability in real time without refreshing the page.
 - Add a "Duplicate Layout" button that clones a layout and all its spots.
 - Add undo/redo support in the builder.
@@ -105,7 +105,7 @@ These are roughly ordered from simpler to more involved. Pick whatever interests
 
 - Integrate a payment gateway (Razorpay, Stripe, or WooCommerce) so bookings are only confirmed after payment.
 - Rebuild the front end in React or Vue instead of jQuery.
-- Replace the DOM-based builder with an HTML5 Canvas or Fabric.js implementation — this matters when a layout has hundreds of spots.
+- Replace the DOM-based builder with an HTML5 Canvas or Fabric.js implementation; this matters when a layout has hundreds of spots.
 - Create pre-built templates (theater, classroom, bus, restaurant) that users can start from instead of building from scratch.
 - Generate QR codes on booking confirmation that can be scanned for check-in.
 - Add a calendar/scheduling mode so spots can be booked for specific dates and times.
@@ -120,7 +120,7 @@ A few things to keep in mind while working on this:
 
 - Always sanitize input and escape output. Use `sanitize_text_field()`, `sanitize_email()`, `esc_html()`, `esc_attr()`, and so on. Never trust what comes from the browser.
 - Use `$wpdb->prepare()` for every database query that includes user-supplied values. No exceptions.
-- Prefix everything — functions, classes, CSS classes, JS variables — with `vb_` or `vb-` to avoid collisions with other plugins.
+- Prefix everything (functions, classes, CSS classes, JS variables) with `vb_` or `vb-` to avoid collisions with other plugins.
 - Wrap all user-facing strings in `__()` or `esc_html__()` with the `'visual-booker'` text domain so the plugin can be translated.
 - Keep JS and CSS in their own files. No inline scripts or styles.
 - Comment your code, especially anything non-obvious in the builder or API logic.
@@ -131,7 +131,7 @@ A few things to keep in mind while working on this:
 
 Set up a local WordPress install (LocalWP, XAMPP, or Docker all work fine). Activate the plugin, create a layout with a handful of spots, embed it on a page, and try booking from an incognito window.
 
-Turn on `WP_DEBUG` and `WP_DEBUG_LOG` in your `wp-config.php` so you can catch errors early. Use the browser's DevTools Network tab to watch REST API requests go back and forth. You can also hit the API directly in your browser — for example, `GET /wp-json/visual-booker/v1/spots/42` — to see what the data looks like.
+Turn on `WP_DEBUG` and `WP_DEBUG_LOG` in your `wp-config.php` so you can catch errors early. Use the browser's DevTools Network tab to watch REST API requests go back and forth. You can also hit the API directly in your browser (for example, `GET /wp-json/visual-booker/v1/spots/42`) to see what the data looks like.
 
 If something looks wrong with the data, check the `wp_vb_spots` and `wp_vb_bookings` tables in phpMyAdmin.
 
@@ -139,4 +139,4 @@ If something looks wrong with the data, check the `wp_vb_spots` and `wp_vb_booki
 
 ## One More Thing
 
-The starter uses Indian Rupees for price display. If you need a different currency, search for the rupee sign and `en-IN` in `public/js/public.js` and update them. Ideally, you'd build a settings page where the admin can pick their currency — that's another good task to take on.
+The starter uses Indian Rupees for price display. If you need a different currency, search for the rupee sign and `en-IN` in `public/js/public.js` and update them. Ideally, you'd build a settings page where the admin can pick their currency - that's another good task to take on.
