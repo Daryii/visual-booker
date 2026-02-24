@@ -1,0 +1,145 @@
+/* ==========================================================================
+   Visual Booker – Admin Builder Styles
+   ========================================================================== */
+
+#vb-builder-wrap {
+    max-width: 100%;
+}
+
+/* Canvas */
+#vb-canvas-wrap {
+    position: relative;
+    border: 2px dashed #ccc;
+    background: #f0f0f0;
+    min-height: 400px;
+    overflow: auto;
+}
+
+#vb-canvas {
+    position: relative;
+    display: inline-block;
+    min-width: 100%;
+    min-height: 400px;
+}
+
+#vb-canvas img#vb-bg-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+#vb-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: #999;
+    font-size: 16px;
+}
+
+/* Spots on canvas */
+.vb-spot {
+    position: absolute;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    cursor: move;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    transition: box-shadow 0.15s ease;
+    z-index: 10;
+    user-select: none;
+    min-width: 24px;
+    min-height: 24px;
+    box-sizing: border-box;
+}
+
+.vb-spot:hover {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0073aa;
+    z-index: 20;
+}
+
+.vb-spot.vb-spot--selected {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #d63638;
+    z-index: 30;
+}
+
+.vb-spot .vb-spot-label {
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    padding: 0 2px;
+}
+
+/* Resize handle */
+.vb-spot .vb-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    cursor: nwse-resize;
+    border-top: 1px solid rgba(0, 0, 0, 0.3);
+    border-left: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Spot editor panel */
+#vb-spot-editor {
+    border-radius: 4px;
+}
+
+#vb-spot-editor .form-table th {
+    width: 120px;
+    padding: 8px 10px 8px 0;
+}
+
+#vb-spot-editor .form-table td {
+    padding: 8px 0;
+}
+
+/* Save status */
+#vb-save-status {
+    font-style: italic;
+    color: #46b450;
+}
+
+/* Toolbar */
+#vb-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Bookings table */
+#vb-bookings-table .vb-status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.vb-status--pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.vb-status--approved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.vb-status--cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
