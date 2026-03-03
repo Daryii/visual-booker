@@ -140,3 +140,6 @@ If something looks wrong with the data, check the `wp_vb_spots` and `wp_vb_booki
 ## One More Thing
 
 The starter uses Indian Rupees for price display. If you need a different currency, search for the rupee sign and `en-IN` in `public/js/public.js` and update them. Ideally, you'd build a settings page where the admin can pick their currency - that's another good task to take on.
+
+## Nieuw
+First official commit from Daryi
