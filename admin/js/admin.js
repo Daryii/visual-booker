@@ -382,6 +382,34 @@
     /* ================================================================== */
     /*  Init                                                               */
     /* ================================================================== */
-    loadSpots();
+   /* ================================================================== */
+    /*  Init                                                               */
+    /* ================================================================== */
 
+
+    // First function to load spots test
+ 
+    $('#vb-bg-image').on('load', function () {
+        loadSpots();
+    });
+
+
+    // Second function to load spots test
+    const $bgImage = $('#vb-bg-image');
+
+    if ($bgImage.length && $bgImage[0].complete) {
+        // afbeelding was al geladen (cache)
+        loadSpots();
+    } else if ($bgImage.length) {
+        // afbeelding is nog aan het laden
+        $bgImage.on('load', function () {
+            loadSpots();
+        });
+    } else {
+        // geen afbeelding aanwezig
+        loadSpots();
+    }
+
+
+    
 })(jQuery);
