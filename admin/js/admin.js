@@ -385,16 +385,7 @@
    /* ================================================================== */
     /*  Init                                                               */
     /* ================================================================== */
-
-
-    // First function to load spots test
- 
-    $('#vb-bg-image').on('load', function () {
-        loadSpots();
-    });
-
-
-    // Second function to load spots test
+    
     const $bgImage = $('#vb-bg-image');
 
     if ($bgImage.length && $bgImage[0].complete) {
