@@ -13,13 +13,12 @@
     background: #f0f0f0;
     min-height: 400px;
     overflow: auto;
+    display: inline-block;   
 }
 
 #vb-canvas {
     position: relative;
     display: inline-block;
-    min-width: 100%;
-    min-height: 400px;
 }
 
 #vb-canvas img#vb-bg-image {
