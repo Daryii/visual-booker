@@ -26,6 +26,20 @@ class VB_Shortcode {
             return '<p class="vb-error">Visual Booker: Layout not found.</p>';
         }
 
+        wp_register_style(
+            'vb-public-css',
+            VB_PLUGIN_URL . 'public/css/public.css',
+            array(),
+            VB_VERSION
+        );
+    
+        wp_register_script(
+            'vb-public-js',
+            VB_PLUGIN_URL . 'public/js/public.js',
+            array( 'jquery' ),
+            VB_VERSION,
+            true
+        );
         // Enqueue assets
         wp_enqueue_style( 'vb-public-css' );
         wp_enqueue_script( 'vb-public-js' );
