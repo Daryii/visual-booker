@@ -82,6 +82,7 @@ function vb_admin_assets( $hook ) {
 /* ------------------------------------------------------------------ */
 function vb_public_assets() {
     // Only load when shortcode is present (also enqueued in shortcode render)
+    error_log('1. vb_public_assets: ' . time());
     wp_register_style(
         'vb-public-css',
         VB_PLUGIN_URL . 'public/css/public.css',
