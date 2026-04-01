@@ -253,4 +253,25 @@ PRIMARY KEY (id)
             )
         );
     }
+
+    /* ------------------------------------------------------------------ */
+    /*  Lookup table helpers                                               */
+    /* ------------------------------------------------------------------ */
+
+    public static function get_spot_types() {
+        global $wpdb;
+        return $wpdb->get_results( "SELECT * FROM " . self::spot_types() );
+    }
+
+    public static function get_spot_statuses() {
+        global $wpdb;
+        return $wpdb->get_results( "SELECT * FROM " . self::spot_statuses() );
+    }
+
+    public static function get_booking_statuses() {
+        global $wpdb;
+        return $wpdb->get_results( "SELECT * FROM " . self::booking_statuses() );
+    }
+
+
 }
