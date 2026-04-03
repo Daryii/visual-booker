@@ -179,9 +179,9 @@ PRIMARY KEY (id)
             'pos_y'     => 0,
             'width'     => 3,
             'height'    => 3,
-            'spot_type' => 'seat',
+            'spot_type' => self::get_spot_types()[0]->name,
             'price'     => 0,
-            'status'    => 'open',
+            'status'    => self::get_spot_statuses()[0]->name,
             'color'     => '#4CAF50',
             'meta_json' => null,
             'sort_order'=> 0,
@@ -245,11 +245,23 @@ PRIMARY KEY (id)
      */
     public static function get_booked_spot_ids( $layout_id ) {
         global $wpdb;
+
+        $statuses = self::get_booking_statuses();
+        $active_statuses = array();
+        foreach ($statuses as $s){
+            if ($s->name !== "cancelled"){
+                $active_statuses[] = $s->name;
+            }
+        }
+
+        $placeholders = implode(',', array_fill(0, count($active_statuses), '%s'));
+
+
         return $wpdb->get_col(
             $wpdb->prepare(
                 "SELECT spot_id FROM " . self::bookings_table() . "
-                 WHERE layout_id = %d AND booking_status IN ('pending','approved')",
-                $layout_id
+                 WHERE layout_id = %d AND booking_status IN ($placeholders)",
+                array_merge( array($layout_id), $active_statuses)
             )
         );
     }
