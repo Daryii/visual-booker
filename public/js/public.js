@@ -38,7 +38,8 @@
 
         spots.forEach(function (spot) {
             const isBooked = spot.booked;
-            const isLocked = spot.status === 'locked' || spot.status === 'maintenance';
+            const openStatus = vbPublic.spotStatuses[0].name;
+            const isLocked = spot.status !== openStatus;
 
             let stateClass = 'vb-spot--open';
             if (isBooked) stateClass = 'vb-spot--booked';
