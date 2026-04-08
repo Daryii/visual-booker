@@ -16,6 +16,7 @@
     const $selectionBar = $wrapper.find('.vb-selection-bar');
     const $modal        = $wrapper.find('.vb-modal');
     const $form         = $wrapper.find('.vb-booking-form');
+    const currencySymbol = vbPublic.currencySymbol;
 
     let spots    = [];
     let selected = [];  // array of spot objects
@@ -40,13 +41,14 @@
             const isBooked = spot.booked;
             const openStatus = vbPublic.spotStatuses[0].name;
             const isLocked = spot.status !== openStatus;
+            
 
             let stateClass = 'vb-spot--open';
             if (isBooked) stateClass = 'vb-spot--booked';
             else if (isLocked) stateClass = 'vb-spot--locked';
 
             const priceText = parseFloat(spot.price) > 0
-                ? ' – ₹' + parseFloat(spot.price).toLocaleString('en-IN')
+                ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString('nl-NL')
                 : '';
 
             const $spot = $('<div>', {
@@ -110,7 +112,7 @@
         }, 0);
 
         $selectionBar.find('.vb-selected-count').text(selected.length);
-        $selectionBar.find('.vb-selected-total').text('₹' + total.toLocaleString('en-IN'));
+        $selectionBar.find('.vb-selected-total').text( currencySymbol + total.toLocaleString('nl-NL'));
         $selectionBar.slideDown(200);
     }
 
@@ -130,7 +132,7 @@
             $summary.append(
                 $('<div>', { class: 'vb-summary-row' }).append(
                     $('<span>').text(s.label || 'Spot #' + s.id),
-                    $('<span>').text('₹' + price.toLocaleString('en-IN'))
+                    $('<span>').text(currencySymbol + price.toLocaleString('nl-NL'))
                 )
             );
         });
@@ -138,7 +140,7 @@
         $summary.append(
             $('<div>', { class: 'vb-summary-row' }).append(
                 $('<span>').text('Total'),
-                $('<span>').text('₹' + total.toLocaleString('en-IN'))
+                $('<span>').text(currencySymbol + total.toLocaleString('nl-NL'))
             )
         );
 

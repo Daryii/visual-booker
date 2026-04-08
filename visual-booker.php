@@ -42,6 +42,7 @@ add_action( 'init', array( 'VB_Post_Type', 'register' ) );
 add_action( 'rest_api_init', array( 'VB_REST_API', 'register_routes' ) );
 add_action( 'admin_enqueue_scripts', 'vb_admin_assets' );
 add_action( 'wp_enqueue_scripts', 'vb_public_assets' );
+add_action('admin_menu', 'vb_settings_menu');
 
 /* ------------------------------------------------------------------ */
 /*  Admin assets                                                       */
@@ -97,4 +98,40 @@ function vb_public_assets() {
         VB_VERSION,
         true
     );
+}
+
+
+function vb_settings_menu(){
+    add_submenu_page(
+        'edit.php?post_type=vb_layout',
+        'Visual Booker Instellingen',
+        'Instellingen',
+        'manage_options',
+        'vb-settings',
+        'vb_settings_page'
+    );
+    register_setting('vb_settings_group', 'vb_currency_symbol');
+}
+
+function vb_settings_page() {
+    ?>
+    <div class="wrap">
+        <h1>Visual Booker Instellingen</h1>
+        <form method="post" action="options.php">
+            <?php settings_fields( 'vb_settings_group' ); ?>
+            <table class="form-table">
+                <tr>
+                    <th><label for="vb_currency_symbol">Valuta symbool</label></th>
+                    <td>
+                        <input type="text" id="vb_currency_symbol" name="vb_currency_symbol" 
+                               value="<?php echo esc_attr( get_option( 'vb_currency_symbol', '€' ) ); ?>" 
+                               class="regular-text" />
+                        <p class="description">Bijv. €, $, £, ₹</p>
+                    </td>
+                </tr>
+            </table>
+            <?php submit_button( 'Opslaan' ); ?>
+        </form>
+    </div>
+    <?php
 }
