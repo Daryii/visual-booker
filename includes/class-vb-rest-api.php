@@ -154,6 +154,8 @@ class VB_REST_API {
 
         // Send admin notification email
         self::send_admin_notification( $booking_data, $id );
+        // Send customer notification email
+        self::send_customer_notification($booking_data, $id);
 
         return rest_ensure_response( array(
             'success'    => true,
@@ -211,5 +213,19 @@ class VB_REST_API {
         );
 
         wp_mail( $admin_email, $subject, $body );
+    }
+
+    private static function send_customer_notification($booking_data, $booking_id){
+        $customer_email = $booking_data['customer_email'];
+        $subject = sprintf('Confirmation of your booking #%d', $booking_id,);
+
+
+    $body = sprintf(
+        "Thank you for your booking!\n\nBoeking ID: %d\nNaam: %s\nSpot: %d\n\nJe ontvangt bericht zodra je boeking is bevestigd.",
+        $booking_id,
+        $booking_data['customer_name'],
+        $booking_data['spot_id']
+    );
+    wp_mail($customer_email, $subject, $body);
     }
 }
