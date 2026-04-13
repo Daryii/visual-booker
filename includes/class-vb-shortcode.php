@@ -47,6 +47,8 @@ class VB_Shortcode {
             'restUrl'  => esc_url_raw( rest_url( 'visual-booker/v1/' ) ),
             'nonce'    => wp_create_nonce( 'wp_rest' ),
             'layoutId' => $layout_id,
+            'spotStatuses' => VB_DB::get_spot_statuses(),
+            'currencySymbol' => get_option('vb_currency_symbol','€')
         ) );
 
         ob_start();
@@ -57,3 +59,6 @@ class VB_Shortcode {
 
 // Register shortcode immediately
 VB_Shortcode::init();
+
+
+

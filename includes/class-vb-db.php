@@ -18,6 +18,20 @@ class VB_DB {
         return $wpdb->prefix . 'vb_bookings';
     }
 
+    public static function spot_types(){
+        global $wpdb;
+        return $wpdb->prefix . 'vb_spot_types';
+    }
+
+    public static function spot_statuses(){
+        global $wpdb;
+        return $wpdb->prefix . 'vb_spot_statuses';
+    }
+
+    public static function booking_statuses(){
+        global $wpdb;
+        return $wpdb->prefix . 'vb_booking_statuses';
+    }
     /**
      * Called on plugin activation.
      */
@@ -27,6 +41,9 @@ class VB_DB {
 
         $spots = self::spots_table();
         $bookings = self::bookings_table();
+        $spot_types = self::spot_types(); 
+        $spot_statuses = self::spot_statuses();
+        $booking_statuses = self::booking_statuses();
 
         $sql = "
 CREATE TABLE {$spots} (
@@ -66,10 +83,73 @@ CREATE TABLE {$bookings} (
     KEY idx_layout(layout_id),
     KEY idx_status(booking_status)
 ) {$charset};
+
+CREATE TABLE {$spot_types} (
+    id          TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name        VARCHAR(20)    NOT NULL DEFAULT '',
+    label       VARCHAR(50),
+    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+) {$charset};
+
+CREATE TABLE {$spot_statuses} (
+id          TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+name        VARCHAR(20)    NOT NULL DEFAULT '',
+label       VARCHAR(50),
+created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (id)
+) {$charset};
+
+CREATE TABLE {$booking_statuses} (
+id          TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+name        VARCHAR(20)    NOT NULL DEFAULT '',
+label       VARCHAR(50),
+created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (id)
+) {$charset};
 ";
+
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
         dbDelta( $sql );
+
+        // Spot types invoegen (alleen als tabel leeg is)
+
+    if ( ! $wpdb->get_var( "SELECT COUNT(*) FROM " . self::spot_types() ) ) {
+
+        $wpdb->insert( self::spot_types(), array( 'name' => 'seat', 'label' => 'Seat' ) );
+
+        $wpdb->insert( self::spot_types(), array( 'name' => 'table', 'label' => 'Table' ) );
+
+        $wpdb->insert( self::spot_types(), array( 'name' => 'zone', 'label' => 'Zone' ) );
+
+        $wpdb->insert( self::spot_types(), array( 'name' => 'custom', 'label' => 'Custom' ) );
+
+    }
+
+    // Spot statuses invoegen (alleen als tabel leeg is)
+
+    if ( ! $wpdb->get_var( "SELECT COUNT(*) FROM " . self::spot_statuses() ) ) {
+
+        $wpdb->insert( self::spot_statuses(), array( 'name' => 'open', 'label' => 'Open' ) );
+
+        $wpdb->insert( self::spot_statuses(), array( 'name' => 'locked', 'label' => 'Locked' ) );
+
+        $wpdb->insert( self::spot_statuses(), array( 'name' => 'maintenance', 'label' => 'Maintenance' ) );
+
+    }
+
+    // Booking statuses invoegen (alleen als tabel leeg is)
+
+    if ( ! $wpdb->get_var( "SELECT COUNT(*) FROM " . self::booking_statuses() ) ) {
+
+        $wpdb->insert( self::booking_statuses(), array( 'name' => 'pending', 'label' => 'Pending' ) );
+
+        $wpdb->insert( self::booking_statuses(), array( 'name' => 'approved', 'label' => 'Approved' ) );
+
+        $wpdb->insert( self::booking_statuses(), array( 'name' => 'cancelled', 'label' => 'Cancelled' ) );
+
+    }
 
         update_option( 'vb_db_version', VB_VERSION );
     }
@@ -99,9 +179,9 @@ CREATE TABLE {$bookings} (
             'pos_y'     => 0,
             'width'     => 3,
             'height'    => 3,
-            'spot_type' => 'seat',
+            'spot_type' => self::get_spot_types()[0]->name,
             'price'     => 0,
-            'status'    => 'open',
+            'status'    => self::get_spot_statuses()[0]->name,
             'color'     => '#4CAF50',
             'meta_json' => null,
             'sort_order'=> 0,
@@ -165,12 +245,45 @@ CREATE TABLE {$bookings} (
      */
     public static function get_booked_spot_ids( $layout_id ) {
         global $wpdb;
+
+        $statuses = self::get_booking_statuses();
+        $active_statuses = array();
+        foreach ($statuses as $s){
+            if ($s->name !== "cancelled"){
+                $active_statuses[] = $s->name;
+            }
+        }
+
+        $placeholders = implode(',', array_fill(0, count($active_statuses), '%s'));
+
+
         return $wpdb->get_col(
             $wpdb->prepare(
                 "SELECT spot_id FROM " . self::bookings_table() . "
-                 WHERE layout_id = %d AND booking_status IN ('pending','approved')",
-                $layout_id
+                 WHERE layout_id = %d AND booking_status IN ($placeholders)",
+                array_merge( array($layout_id), $active_statuses)
             )
         );
     }
+
+    /* ------------------------------------------------------------------ */
+    /*  Lookup table helpers                                               */
+    /* ------------------------------------------------------------------ */
+
+    public static function get_spot_types() {
+        global $wpdb;
+        return $wpdb->get_results( "SELECT * FROM " . self::spot_types() );
+    }
+
+    public static function get_spot_statuses() {
+        global $wpdb;
+        return $wpdb->get_results( "SELECT * FROM " . self::spot_statuses() );
+    }
+
+    public static function get_booking_statuses() {
+        global $wpdb;
+        return $wpdb->get_results( "SELECT * FROM " . self::booking_statuses() );
+    }
+
+
 }

@@ -166,8 +166,14 @@ class VB_REST_API {
         $id     = (int) $request['id'];
         $data   = $request->get_json_params();
         $status = sanitize_text_field( $data['status'] ?? '' );
+        $statuses = VB_DB::get_booking_statuses();
+        $allowed = array();
 
-        if ( ! in_array( $status, array( 'pending', 'approved', 'cancelled' ), true ) ) {
+        foreach ( $statuses as $s ) {
+            $allowed[] = $s->name;
+        }
+
+        if ( ! in_array( $status, $allowed, true ) ) {
             return new WP_Error( 'invalid_status', 'Invalid status value.', array( 'status' => 400 ) );
         }
 

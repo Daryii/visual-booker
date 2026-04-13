@@ -123,10 +123,12 @@ class VB_Post_Type {
                         <th><label for="vb-spot-type"><?php esc_html_e( 'Type', 'visual-booker' ); ?></label></th>
                         <td>
                             <select id="vb-spot-type">
-                                <option value="seat"><?php esc_html_e( 'Seat', 'visual-booker' ); ?></option>
-                                <option value="table"><?php esc_html_e( 'Table', 'visual-booker' ); ?></option>
-                                <option value="zone"><?php esc_html_e( 'Zone', 'visual-booker' ); ?></option>
-                                <option value="custom"><?php esc_html_e( 'Custom', 'visual-booker' ); ?></option>
+                               <?php 
+                               $spot_types = VB_DB::get_spot_types();
+                               foreach ($spot_types as $spot_type) {
+                                echo '<option value="' . esc_attr( $spot_type->name ) . '">' . esc_html( $spot_type->label ) . '</option>';
+                               }
+                               ?>
                             </select>
                         </td>
                     </tr>
@@ -142,9 +144,12 @@ class VB_Post_Type {
                         <th><label for="vb-spot-status"><?php esc_html_e( 'Status', 'visual-booker' ); ?></label></th>
                         <td>
                             <select id="vb-spot-status">
-                                <option value="open"><?php esc_html_e( 'Open', 'visual-booker' ); ?></option>
-                                <option value="locked"><?php esc_html_e( 'Locked', 'visual-booker' ); ?></option>
-                                <option value="maintenance"><?php esc_html_e( 'Maintenance', 'visual-booker' ); ?></option>
+                                <?php 
+                                $spot_statuses = VB_DB::get_spot_statuses();
+                                foreach ($spot_statuses as $spot_status) {
+                                    echo '<option value="' . esc_attr( $spot_status->name ) . '">' . esc_html( $spot_status->label ) . '</option>';
+                                }
+                                ?>
                             </select>
                         </td>
                     </tr>
