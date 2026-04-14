@@ -96,18 +96,97 @@ class VB_REST_API {
 
     public static function save_spot( $request ) {
         $data = $request->get_json_params();
+
+        // Verplichte velden checken
+        if ( empty( $data['layout_id'])){
+            return new WP_Error('missing_field', 'Veld "layout_id" is verplicht.', array('status' => 400));
+        }
+        if (empty($data['label'])){
+            return new WP_Error('missing_field', 'Veld "label" is verplicht.', array('status' => 400));
+        }
+        
+        // pos_x en pos_y moeten tussen 0 en 100 liggen
+       if (isset($data['pos_x']) && ($data['pos_x'] < 0 || $data['pos_x'] > 100)){
+        return new WP_Error('invalid_value', 'pos_x moet tussen 0 en 100 zijn.', array('status' => 400));
+       }
+       if (isset($data['pos_y']) && ($data['pos_y'] < 0 || $data['pos_y'] > 100)){
+        return new WP_Error('invalid_value', 'pos_y moet tussen 0 en 100 zijn.', array('status' => 400));
+       }
+
+       // Prijs mag niet negatief zijn
+       if (isset($data['price']) && $data['price'] < 0){
+        return new WP_Error('invalid_value', 'Prijs mag niet negatief zijn.', array('status' => 400));
+       }
+
+       // Data sanitizen
+       $data['label'] = sanitize_text_field($data['label']);
+       $data['layout_id'] = absint($data['layout_id']);
+       $data['pos_x'] = floatval($data['pos_x'] ?? 0);
+       $data['pos_y'] = floatval($data['pos_y'] ?? 0);
+       $data['width'] = floatval($data['width'] ?? 3);
+       $data['height'] = floatval($data['height'] ?? 3);
+       $data['price'] = floatval($data['price'] ?? 0);
+       $data['color'] = sanitize_hex_color($data['color'] ?? '#4CAF50') ?: '#4CAF50';
+       $data['status'] = sanitize_text_field($data['status'] ?? 'open');
+       $data['spot_type'] = sanitize_text_field($data['spot_type'] ?? 'seat');
+
         $id   = VB_DB::upsert_spot( $data );
         return rest_ensure_response( array( 'success' => true, 'id' => $id ) );
     }
 
     public static function bulk_save_spots( $request ) {
-        $body  = $request->get_json_params();
-        $spots = isset( $body['spots'] ) ? $body['spots'] : array();
-        $ids   = array();
-        foreach ( $spots as $s ) {
-            $ids[] = VB_DB::upsert_spot( $s );
+        $body = $request->get_json_params();
+        $spots = isset($body['spots']) ? $body['spots'] : array();
+        $ids = array();
+        $errors = array();
+
+        foreach ($spots as $index => $s) {
+        // Verplichte velden checken
+            if ( empty( $s['layout_id'] ) ) {
+                $errors[] = sprintf( 'Spot %d: layout_id is verplicht.', $index + 1 );
+                continue;
+            }
+            if ( empty( $s['label'] ) ) {
+                $errors[] = sprintf( 'Spot %d: label is verplicht.', $index + 1 );
+                continue;
+            }
+
+            // pos_x en pos_y moeten tussen 0 en 100 liggen
+            if ( isset( $s['pos_x'] ) && ( $s['pos_x'] < 0 || $s['pos_x'] > 100 ) ) {
+                $errors[] = sprintf( 'Spot %d: pos_x moet tussen 0 en 100 zijn.', $index + 1 );
+                continue;
+            }
+            if ( isset( $s['pos_y'] ) && ( $s['pos_y'] < 0 || $s['pos_y'] > 100 ) ) {
+                $errors[] = sprintf( 'Spot %d: pos_y moet tussen 0 en 100 zijn.', $index + 1 );
+                continue;
+            }
+
+            // Prijs mag niet negatief zijn
+            if ( isset( $s['price'] ) && $s['price'] < 0 ) {
+                $errors[] = sprintf( 'Spot %d: prijs mag niet negatief zijn.', $index + 1 );
+                continue;
+            }
+            
+            // Data sanitizen
+            $s['label'] = sanitize_text_field( $s['label'] );
+            $s['layout_id'] = absint( $s['layout_id'] );
+            $s['pos_x'] = floatval( $s['pos_x'] ?? 0 );
+            $s['pos_y'] = floatval( $s['pos_y'] ?? 0 );
+            $s['width'] = floatval( $s['width'] ?? 3 );
+            $s['height'] = floatval( $s['height'] ?? 3 );
+            $s['price'] = floatval( $s['price'] ?? 0 );
+            $s['color'] = sanitize_hex_color( $s['color'] ?? '#4CAF50' ) ?: '#4CAF50';
+            $s['status'] = sanitize_text_field( $s['status'] ?? 'open');
+            $s['spot_type'] = sanitize_text_field( $s['spot_type'] ?? 'seat');
+
+            $ids[] = VB_DB::upsert_spot($s);
         }
-        return rest_ensure_response( array( 'success' => true, 'ids' => $ids ) );
+
+        if (!empty($errors)) {
+            return rest_ensure_response( array( 'success' => false, 'errors' => $errors, 'ids' => $ids ) );
+        }
+
+        return rest_ensure_response(array('success' => true, 'ids' => $ids));
     }
 
     public static function delete_spot( $request ) {
