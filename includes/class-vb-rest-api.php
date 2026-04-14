@@ -215,17 +215,36 @@ class VB_REST_API {
         wp_mail( $admin_email, $subject, $body );
     }
 
-    private static function send_customer_notification($booking_data, $booking_id){
+    private static function send_customer_notification($booking_data, $booking_id) {
+        global $wpdb;
+    
         $customer_email = $booking_data['customer_email'];
-        $subject = sprintf('Confirmation of your booking #%d', $booking_id,);
-
-
-    $body = sprintf(
-        "Thank you for your booking!\n\nBoeking ID: %d\nNaam: %s\nSpot: %d\n\nJe ontvangt bericht zodra je boeking is bevestigd.",
-        $booking_id,
-        $booking_data['customer_name'],
-        $booking_data['spot_id']
-    );
-    wp_mail($customer_email, $subject, $body);
+    
+        // Spot label ophalen
+        $spot = $wpdb->get_row(
+            $wpdb->prepare(
+                "SELECT label, price FROM " . VB_DB::spots_table() . " WHERE id = %d",
+                $booking_data['spot_id']
+            )
+        );
+    
+        // Layout naam ophalen
+        $layout_title = get_the_title($booking_data['layout_id']);
+    
+        $spot_label = $spot ? $spot->label : 'Spot #' . $booking_data['spot_id'];
+        $spot_price = $spot ? $spot->price : '0.00';
+    
+        $subject = sprintf('Boekingsbevestiging #%d – %s', $booking_id, $layout_title);
+    
+        $body = sprintf(
+            "Bedankt voor je boeking!\n\nBoeking ID: %d\nNaam: %s\nLayout: %s\nSpot: %s\nPrijs: €%s\nStatus: In afwachting\n\nJe ontvangt een bericht zodra je boeking is bevestigd.",
+            $booking_id,
+            $booking_data['customer_name'],
+            $layout_title,
+            $spot_label,
+            number_format((float)$spot_price, 2, ',', '.')
+        );
+    
+        wp_mail($customer_email, $subject, $body);
     }
 }
