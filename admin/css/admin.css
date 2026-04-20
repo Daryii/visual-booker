@@ -16,6 +16,14 @@
     display: inline-block;   
 }
 
+/* Raster overlay */
+#vb-canvas-wrap.vb-grid-active {
+    background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+    background-size: 5% 5%;
+}
+
 #vb-canvas {
     position: relative;
     display: inline-block;

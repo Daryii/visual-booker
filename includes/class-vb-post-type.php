@@ -94,6 +94,9 @@ class VB_Post_Type {
                 <button type="button" class="button" id="vb-save-spots">
                     💾 <?php esc_html_e( 'Save All Spots', 'visual-booker' ); ?>
                 </button>
+                <button type="button" class="button" id="vb-toggle-grid">
+                    🔲 <?php esc_html_e( 'Toggle Grid', 'visual-booker' ); ?>
+                </button>
                 <span id="vb-save-status" style="margin-left:10px;"></span>
             </div>
 
