@@ -380,7 +380,7 @@
     });
 
     $('#vb-toggle-grid').on('click', function () {
-        $('#vb-canvas-wrap').toggleClass('vb-grid-active');
+        $canvas.toggleClass('vb-grid-active');
     });
 
     /* ================================================================== */
