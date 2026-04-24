@@ -86,18 +86,26 @@ class VB_Post_Type {
                 <input type="hidden" name="vb_layout_image_id" id="vb-layout-image-id" value="<?php echo esc_attr( $image_id ); ?>" />
             </div>
 
-            <!-- Toolbar -->
-            <div id="vb-toolbar" style="margin-bottom:8px;">
-                <button type="button" class="button button-primary" id="vb-add-spot">
-                    ➕ <?php esc_html_e( 'Add Spot', 'visual-booker' ); ?>
-                </button>
-                <button type="button" class="button" id="vb-save-spots">
-                    💾 <?php esc_html_e( 'Save All Spots', 'visual-booker' ); ?>
-                </button>
-                <button type="button" class="button" id="vb-toggle-grid">
-                    🔲 <?php esc_html_e( 'Toggle Grid', 'visual-booker' ); ?>
-                </button>
-                <span id="vb-save-status" style="margin-left:10px;"></span>
+            <!-- Toolbar row -->
+            <div id="vb-toolbar-row">
+                <div id="vb-toolbar">
+                    <button type="button" class="button button-primary" id="vb-add-spot">
+                        ➕ <?php esc_html_e( 'Add Spot', 'visual-booker' ); ?>
+                    </button>
+                    <button type="button" class="button" id="vb-save-spots">
+                        💾 <?php esc_html_e( 'Save All Spots', 'visual-booker' ); ?>
+                    </button>
+                    <button type="button" class="button" id="vb-toggle-grid">
+                        🔲 <?php esc_html_e( 'Toggle Grid', 'visual-booker' ); ?>
+                    </button>
+                    <span id="vb-save-status"></span>
+                </div>
+                <select id="vb-grid-size">
+                    <option value="1">1%</option>
+                    <option value="2">2%</option>
+                    <option value="5" selected>5%</option>
+                    <option value="10">10%</option>
+                </select>
             </div>
 
             <!-- The canvas / builder area -->
@@ -115,7 +123,7 @@ class VB_Post_Type {
             </div>
 
             <!-- Spot editor panel (appears when a spot is selected) -->
-            <div id="vb-spot-editor" style="display:none; margin-top:12px; padding:12px; border:1px solid #ccc; background:#f9f9f9;">
+            <div id="vb-spot-editor" style="display:none;">
                 <h4><?php esc_html_e( 'Edit Spot', 'visual-booker' ); ?></h4>
                 <table class="form-table">
                     <tr>

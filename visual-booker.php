@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
-define( 'VB_VERSION', '1.0.0' );
+define( 'VB_VERSION', '1.0.1' );
 define( 'VB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'VB_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -53,20 +53,22 @@ function vb_admin_assets( $hook ) {
         return;
     }
 
+    $ver = WP_DEBUG ? null : VB_VERSION;
+
     wp_enqueue_media(); // WP media uploader
 
     wp_enqueue_style(
         'vb-admin-css',
         VB_PLUGIN_URL . 'admin/css/admin.css',
         array(),
-        VB_VERSION
+        $ver
     );
 
     wp_enqueue_script(
         'vb-admin-js',
         VB_PLUGIN_URL . 'admin/js/admin.js',
         array( 'jquery', 'jquery-ui-draggable', 'jquery-ui-droppable', 'wp-util' ),
-        VB_VERSION,
+        $ver,
         true
     );
 
@@ -84,18 +86,20 @@ function vb_admin_assets( $hook ) {
 function vb_public_assets() {
     // Only load when shortcode is present (also enqueued in shortcode render)
     error_log('1. vb_public_assets: ' . time());
+    $ver = WP_DEBUG ? null : VB_VERSION;
+
     wp_register_style(
         'vb-public-css',
         VB_PLUGIN_URL . 'public/css/public.css',
         array(),
-        VB_VERSION
+        $ver
     );
 
     wp_register_script(
         'vb-public-js',
         VB_PLUGIN_URL . 'public/js/public.js',
         array( 'jquery' ),
-        VB_VERSION,
+        $ver,
         true
     );
 }
