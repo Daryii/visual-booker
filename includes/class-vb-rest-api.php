@@ -54,6 +54,13 @@ class VB_REST_API {
             'permission_callback' => '__return_true',
         ) );
 
+        // POST create multiple bookings in one request (VB-98)
+        register_rest_route( $ns, '/bookings/bulk', array(
+            'methods'             => 'POST',
+            'callback'            => array( __CLASS__, 'create_bookings_bulk' ),
+            'permission_callback' => '__return_true',
+        ) );
+
         // PATCH update booking status (admin)
         register_rest_route( $ns, '/booking/(?P<id>\d+)/status', array(
             'methods'             => 'PATCH',
@@ -243,6 +250,68 @@ class VB_REST_API {
         ) );
     }
 
+    public static function create_bookings_bulk( $request ) {
+        $data = $request->get_json_params();
+
+        // Validatie
+        if ( empty( $data['spot_ids'] ) || ! is_array( $data['spot_ids'] ) ) {
+            return new WP_Error( 'missing_field', 'Field "spot_ids" is required and must be an array.', array( 'status' => 400 ) );
+        }
+        foreach ( array( 'layout_id', 'customer_name', 'customer_email' ) as $field ) {
+            if ( empty( $data[ $field ] ) ) {
+                return new WP_Error( 'missing_field', sprintf( 'Field "%s" is required.', $field ), array( 'status' => 400 ) );
+            }
+        }
+
+        $layout_id      = absint( $data['layout_id'] );
+        $customer_name  = sanitize_text_field( $data['customer_name'] );
+        $customer_email = sanitize_email( $data['customer_email'] );
+        $customer_phone = sanitize_text_field( $data['customer_phone'] ?? '' );
+        $notes          = sanitize_textarea_field( $data['notes'] ?? '' );
+
+        // Controleer welke spots al geboekt zijn
+        $already_booked = VB_DB::get_booked_spot_ids( $layout_id );
+        $booking_ids    = array();
+        $skipped        = array();
+
+        foreach ( $data['spot_ids'] as $spot_id ) {
+            $spot_id = absint( $spot_id );
+            if ( in_array( (string) $spot_id, $already_booked, true ) ) {
+                $skipped[] = $spot_id;
+                continue;
+            }
+
+            $id = VB_DB::create_booking( array(
+                'spot_id'        => $spot_id,
+                'layout_id'      => $layout_id,
+                'customer_name'  => $customer_name,
+                'customer_email' => $customer_email,
+                'customer_phone' => $customer_phone,
+                'booking_status' => 'pending',
+                'notes'          => $notes,
+            ) );
+
+            if ( $id ) {
+                $booking_ids[] = $id;
+            }
+        }
+
+        if ( empty( $booking_ids ) ) {
+            return new WP_Error( 'all_booked', 'All selected spots are already booked.', array( 'status' => 409 ) );
+        }
+
+        // Stuur één admin mail en één klant mail met alle geboekte spots
+        self::send_admin_notification_bulk( $booking_ids, $layout_id, $customer_name, $customer_email, $customer_phone, $notes );
+        self::send_customer_notification_bulk( $booking_ids, $layout_id, $customer_name, $customer_email );
+
+        return rest_ensure_response( array(
+            'success'     => true,
+            'booking_ids' => $booking_ids,
+            'skipped'     => $skipped,
+            'message'     => 'Bookings created successfully! You will receive a confirmation email shortly.',
+        ) );
+    }
+
     public static function update_booking_status( $request ) {
         $id     = (int) $request['id'];
         $data   = $request->get_json_params();
@@ -271,6 +340,75 @@ class VB_REST_API {
     /* ------------------------------------------------------------------ */
     /*  Email notification                                                  */
     /* ------------------------------------------------------------------ */
+
+    private static function send_admin_notification_bulk( $booking_ids, $layout_id, $customer_name, $customer_email, $customer_phone, $notes ) {
+        global $wpdb;
+
+        $layout_title = get_the_title( $layout_id );
+        $admin_email  = get_option( 'admin_email' );
+
+        // Haal alle geboekte spots op
+        $spots_text = '';
+        $total      = 0.0;
+        foreach ( $booking_ids as $booking_id ) {
+            $row = $wpdb->get_row( $wpdb->prepare(
+                "SELECT s.label, s.price FROM " . VB_DB::spots_table() . " s
+                 INNER JOIN " . VB_DB::bookings_table() . " b ON b.spot_id = s.id
+                 WHERE b.id = %d",
+                $booking_id
+            ) );
+            if ( $row ) {
+                $total       += (float) $row->price;
+                $spots_text  .= sprintf( "  - %s (€%s)\n", $row->label, number_format( (float) $row->price, 2, ',', '.' ) );
+            }
+        }
+
+        $subject = sprintf( '[%s] Nieuwe boeking – %s (%d spot(s))', get_bloginfo( 'name' ), $customer_name, count( $booking_ids ) );
+        $body    = sprintf(
+            "Nieuwe boeking ontvangen:\n\nKlant: %s\nE-mail: %s\nTelefoon: %s\nLayout: %s\nNotes: %s\n\nGeboekte spots:\n%s\nTotaalprijs: €%s\n\nBeheer boekingen in WP Admin → Booking Layouts.",
+            $customer_name,
+            $customer_email,
+            $customer_phone,
+            $layout_title,
+            $notes,
+            $spots_text,
+            number_format( $total, 2, ',', '.' )
+        );
+
+        wp_mail( $admin_email, $subject, $body );
+    }
+
+    private static function send_customer_notification_bulk( $booking_ids, $layout_id, $customer_name, $customer_email ) {
+        global $wpdb;
+
+        $layout_title = get_the_title( $layout_id );
+        $spots_text   = '';
+        $total        = 0.0;
+
+        foreach ( $booking_ids as $booking_id ) {
+            $row = $wpdb->get_row( $wpdb->prepare(
+                "SELECT s.label, s.price FROM " . VB_DB::spots_table() . " s
+                 INNER JOIN " . VB_DB::bookings_table() . " b ON b.spot_id = s.id
+                 WHERE b.id = %d",
+                $booking_id
+            ) );
+            if ( $row ) {
+                $total      += (float) $row->price;
+                $spots_text .= sprintf( "  - %s (€%s)\n", $row->label, number_format( (float) $row->price, 2, ',', '.' ) );
+            }
+        }
+
+        $subject = sprintf( 'Boekingsbevestiging – %s (%d spot(s))', $layout_title, count( $booking_ids ) );
+        $body    = sprintf(
+            "Bedankt voor je boeking, %s!\n\nLayout: %s\n\nGeboekte spots:\n%s\nTotaalprijs: €%s\nStatus: In afwachting\n\nJe ontvangt een bericht zodra je boeking is bevestigd.",
+            $customer_name,
+            $layout_title,
+            $spots_text,
+            number_format( $total, 2, ',', '.' )
+        );
+
+        wp_mail( $customer_email, $subject, $body );
+    }
 
     private static function send_admin_notification( $booking_data, $booking_id ) {
         $admin_email = get_option( 'admin_email' );

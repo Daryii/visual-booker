@@ -240,64 +240,45 @@
             return;
         }
 
-        // Submit bookings sequentially for each selected spot
-        let completed = 0;
-        let errors    = [];
+        // Stuur alle spots in één API call (VB-99)
+        $.ajax({
+            url: API + 'bookings/bulk',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                spot_ids: selected.map(function (s) { return s.id; }),
+                layout_id: layoutId,
+                customer_name: customerName,
+                customer_email: customerEmail,
+                customer_phone: customerPhone,
+                notes: notes,
+            }),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', NONCE);
+            },
+            success: function (res) {
+                $btn.prop('disabled', false).text('Confirm Booking');
 
-        selected.forEach(function (spot) {
-            $.ajax({
-                url: API + 'booking',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    spot_id: spot.id,
-                    layout_id: layoutId,
-                    customer_name: customerName,
-                    customer_email: customerEmail,
-                    customer_phone: customerPhone,
-                    notes: notes,
-                }),
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', NONCE);
-                },
-                success: function () {
-                    completed++;
-                    checkComplete();
-                },
-                error: function (xhr) {
-                    const res = xhr.responseJSON;
-                    errors.push((spot.label || 'Spot #' + spot.id) + ': ' + (res?.message || 'Error'));
-                    completed++;
-                    checkComplete();
-                },
-            });
-        });
-
-        function checkComplete() {
-            if (completed < selected.length) return;
-
-            $btn.prop('disabled', false).text('Confirm Booking');
-
-            if (errors.length === 0) {
                 showFormMessage(
-                    '🎉 Booking confirmed! You will receive a confirmation email shortly.',
+                    '🎉 Boeking bevestigd! Je ontvangt een bevestigingsmail.',
                     'success'
                 );
                 $form[0].reset();
                 selected = [];
                 updateSelectionBar();
 
-                // Reload spots to reflect new bookings
                 setTimeout(function () {
                     $modal.hide();
                     loadSpots();
                 }, 2000);
-            } else {
-                showFormMessage('Some bookings had issues: ' + errors.join('; '), 'error');
-                // Reload anyway to update availability
+            },
+            error: function (xhr) {
+                $btn.prop('disabled', false).text('Confirm Booking');
+                const res = xhr.responseJSON;
+                showFormMessage(res?.message || 'Er is iets misgegaan. Probeer het opnieuw.', 'error');
                 loadSpots();
-            }
-        }
+            },
+        });
     });
 
     function showFormMessage(text, type) {
