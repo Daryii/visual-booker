@@ -3,7 +3,7 @@
  * Plugin Name: Visual Booker
  * Plugin URI:  https://github.com/AbhishekDas/visual-booker
  * Description: Interactive seat/spot booking on custom images or maps. Users upload a floor plan, map, or layout image, place bookable spots on it via a drag-and-drop admin builder, and visitors can select & book spots on the front end.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Abhishek Das
  * Author URI:  https://github.com/AbhishekDas
  * License:     GPL-2.0+
