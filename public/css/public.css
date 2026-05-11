@@ -203,6 +203,19 @@
     display: block;
 }
 
+/* VB-111: tooltip onder de spot als er boven geen ruimte is */
+.vb-spot--tooltip-below .vb-tooltip {
+    bottom: auto;
+    top: calc(100% + 8px);
+}
+
+.vb-spot--tooltip-below .vb-tooltip::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: #333;
+}
+
 /* Selection bar */
 .vb-selection-bar {
     display: flex;
