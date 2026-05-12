@@ -56,8 +56,9 @@
                 ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString('nl-NL')
                 : '';
 
+            const tooltipBelow = spot.pos_y < 20;
             const $spot = $('<div>', {
-                class: 'vb-spot-public ' + stateClass,
+                class: 'vb-spot-public ' + stateClass + (tooltipBelow ? ' vb-spot--tooltip-below' : ''),
                 'data-id': spot.id,
             })
                 .css({
