@@ -56,9 +56,8 @@
                 ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString('nl-NL')
                 : '';
 
-            const tooltipBelow = spot.pos_y < 20;
             const $spot = $('<div>', {
-                class: 'vb-spot-public ' + stateClass + (tooltipBelow ? ' vb-spot--tooltip-below' : ''),
+                class: 'vb-spot-public ' + stateClass,
                 'data-id': spot.id,
             })
                 .css({
@@ -76,6 +75,12 @@
                               (isBooked ? ' (Booked)' : isLocked ? ' (Unavailable)' : ''),
                     })
                 );
+
+            $spot.on('mouseenter', function () {
+                const spotTop = this.getBoundingClientRect().top;
+                const containerTop = $wrapper.find('.vb-canvas-container')[0].getBoundingClientRect().top;
+                $(this).toggleClass('vb-spot--tooltip-below', spotTop - containerTop < 50);
+            });
 
             // Click handler for selectable spots
             if (!isBooked && !isLocked) {
