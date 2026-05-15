@@ -70,25 +70,12 @@ class VB_Post_Type {
     /* ---------- Builder ---------- */
     public static function render_builder_meta_box( $post ) {
         wp_nonce_field( 'vb_save_layout', 'vb_layout_nonce' );
-        $image_url   = get_post_meta( $post->ID, '_vb_layout_image', true );
-        $image_id    = get_post_meta( $post->ID, '_vb_layout_image_id', true );
-        $layout_type = get_post_meta( $post->ID, '_vb_layout_type', true ) ?: 'image';
+        $image_url = get_post_meta( $post->ID, '_vb_layout_image', true );
+        $image_id  = get_post_meta( $post->ID, '_vb_layout_image_id', true );
         ?>
         <div id="vb-builder-wrap">
 
-            <!-- Layout type dropdown -->
-            <div id="vb-layout-type-wrap" style="margin-bottom:14px;">
-                <label for="vb-layout-type-select"><strong><?php esc_html_e( 'Layout type', 'visual-booker' ); ?></strong></label>
-                <select name="vb_layout_type" id="vb-layout-type-select" style="margin-left:8px;">
-                    <option value="image" <?php selected( $layout_type, 'image' ); ?>><?php esc_html_e( 'Image (statische afbeelding)', 'visual-booker' ); ?></option>
-                    <option value="map" <?php selected( $layout_type, 'map' ); ?>><?php esc_html_e( 'Map (OpenStreetMap)', 'visual-booker' ); ?></option>
-                </select>
-            </div>
-
-            <!-- Image section -->
-            <div id="vb-image-section">
-
-                <!-- Image picker -->
+            <!-- Image picker -->
                 <div id="vb-image-picker" style="margin-bottom:12px;">
                     <button type="button" class="button" id="vb-pick-image">
                         <?php esc_html_e( 'Choose Background Image / Map', 'visual-booker' ); ?>
@@ -183,8 +170,6 @@ class VB_Post_Type {
                     <button type="button" class="button" id="vb-spot-delete" style="color:#a00;"><?php esc_html_e( 'Delete Spot', 'visual-booker' ); ?></button>
                 </div>
 
-            </div><!-- /#vb-image-section -->
-
         </div>
         <?php
     }
@@ -267,9 +252,5 @@ class VB_Post_Type {
             update_post_meta( $post_id, '_vb_layout_image_id', absint( $_POST['vb_layout_image_id'] ) );
         }
 
-        if ( isset( $_POST['vb_layout_type'] ) ) {
-            $type = sanitize_text_field( $_POST['vb_layout_type'] );
-            update_post_meta( $post_id, '_vb_layout_type', in_array( $type, array( 'image', 'map' ), true ) ? $type : 'image' );
-        }
     }
 }
