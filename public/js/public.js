@@ -22,7 +22,7 @@
     let selected = [];  // array of spot objects
 
     let zoomLevel   = 1;
-    const ZOOM_MIN  = 0.5;
+    const ZOOM_MIN  = 1;
     const ZOOM_MAX  = 3;
     const ZOOM_STEP = 0.25;
 

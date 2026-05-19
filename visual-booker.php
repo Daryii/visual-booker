@@ -127,10 +127,24 @@ function vb_settings_page() {
                 <tr>
                     <th><label for="vb_currency_symbol">Valuta symbool</label></th>
                     <td>
-                        <input type="text" id="vb_currency_symbol" name="vb_currency_symbol" 
-                               value="<?php echo esc_attr( get_option( 'vb_currency_symbol', '€' ) ); ?>" 
-                               class="regular-text" />
-                        <p class="description">Bijv. €, $, £, ₹</p>
+                        <?php $current = get_option( 'vb_currency_symbol', '€' ); ?>
+                        <select id="vb_currency_symbol" name="vb_currency_symbol">
+                            <?php
+                            $currencies = [
+                                '€' => '€ — Euro',
+                                '$' => '$ — US Dollar',
+                                '£' => '£ — Brits Pond'
+                            ];
+                            foreach ( $currencies as $symbol => $label ) {
+                                printf(
+                                    '<option value="%s"%s>%s</option>',
+                                    esc_attr( $symbol ),
+                                    selected( $current, $symbol, false ),
+                                    esc_html( $label )
+                                );
+                            }
+                            ?>
+                        </select>
                     </td>
                 </tr>
             </table>

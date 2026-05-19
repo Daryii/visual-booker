@@ -66,8 +66,6 @@
         $.getJSON(API + 'spots/' + layoutId, function (data) {
             spots = data;
             renderAllSpots();
-        }).fail(function (jqXHR, textStatus, errorThrown) {
-            console.error('Load spots failed:', textStatus, errorThrown, jqXHR.status);
         });
     }
 
