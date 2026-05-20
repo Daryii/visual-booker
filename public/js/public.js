@@ -21,6 +21,11 @@
     let spots    = [];
     let selected = [];  // array of spot objects
 
+    let zoomLevel   = 1;
+    const ZOOM_MIN  = 1;
+    const ZOOM_MAX  = 3;
+    const ZOOM_STEP = 0.25;
+
     /* ================================================================== */
     /*  1. Load spots from REST API                                        */
     /* ================================================================== */
@@ -71,6 +76,12 @@
                     })
                 );
 
+            $spot.on('mouseenter', function () {
+                const spotTop = this.getBoundingClientRect().top;
+                const containerTop = $wrapper.find('.vb-canvas-container')[0].getBoundingClientRect().top;
+                $(this).toggleClass('vb-spot--tooltip-below', spotTop - containerTop < 50);
+            });
+
             // Click handler for selectable spots
             if (!isBooked && !isLocked) {
                 $spot.on('click', function () {
@@ -117,7 +128,70 @@
     }
 
     /* ================================================================== */
-    /*  4. Booking modal                                                   */
+    /*  4. Zoom (VB-72)                                                    */
+    /* ================================================================== */
+    function applyZoom( newLevel ) {
+        zoomLevel = Math.max( ZOOM_MIN, Math.min( ZOOM_MAX, newLevel ) );
+        $canvas.css( 'width', ( zoomLevel * 100 ) + '%' );
+        $wrapper.find( '.vb-zoom-level' ).text( Math.round( zoomLevel * 100 ) + '%' );
+    }
+
+    $wrapper.find( '[id^="vb-zoom-in-"]' ).on( 'click', function () { applyZoom( zoomLevel + ZOOM_STEP ); } );
+    $wrapper.find( '[id^="vb-zoom-out-"]' ).on( 'click', function () { applyZoom( zoomLevel - ZOOM_STEP ); } );
+    $wrapper.find( '[id^="vb-zoom-reset-"]' ).on( 'click', function () { applyZoom( 1 ); } );
+
+    /* ================================================================== */
+    /*  5. Pan — click and drag to scroll the map (VB-72)                  */
+    /* ================================================================== */
+    (function setupPan() {
+        const $container = $wrapper.find( '.vb-canvas-container' );
+        let isPanning = false, panStartX = 0, panStartY = 0, scrollStartX = 0, scrollStartY = 0;
+
+        $container.on( 'mousedown', function ( e ) {
+            if ( $( e.target ).closest( '.vb-spot-public' ).length ) return;
+            isPanning    = true;
+            panStartX    = e.clientX;
+            panStartY    = e.clientY;
+            scrollStartX = $container[0].scrollLeft;
+            scrollStartY = $container[0].scrollTop;
+            $canvas.addClass( 'vb-is-panning' );
+            e.preventDefault();
+        } );
+
+        $( document ).on( 'mousemove.vbPan', function ( e ) {
+            if ( ! isPanning ) return;
+            $container[0].scrollLeft = scrollStartX - ( e.clientX - panStartX );
+            $container[0].scrollTop  = scrollStartY - ( e.clientY - panStartY );
+        } );
+
+        $( document ).on( 'mouseup.vbPan', function () {
+            isPanning = false;
+            $canvas.removeClass( 'vb-is-panning' );
+        } );
+
+        // Touch support (mobile)
+        $container.on( 'touchstart', function ( e ) {
+            if ( e.touches.length !== 1 ) return;
+            const t    = e.touches[0];
+            isPanning    = true;
+            panStartX    = t.clientX;
+            panStartY    = t.clientY;
+            scrollStartX = $container[0].scrollLeft;
+            scrollStartY = $container[0].scrollTop;
+        } );
+
+        $container.on( 'touchmove', function ( e ) {
+            if ( ! isPanning || e.touches.length !== 1 ) return;
+            const t = e.touches[0];
+            $container[0].scrollLeft = scrollStartX - ( t.clientX - panStartX );
+            $container[0].scrollTop  = scrollStartY - ( t.clientY - panStartY );
+        } );
+
+        $container.on( 'touchend', function () { isPanning = false; } );
+    }());
+
+    /* ================================================================== */
+    /*  6. Booking modal                                                   */
     /* ================================================================== */
     $wrapper.on('click', '.vb-open-booking-form', function () {
         if (selected.length === 0) return;
@@ -153,7 +227,7 @@
     });
 
     /* ================================================================== */
-    /*  5. Form submission                                                 */
+    /*  7. Form submission                                                 */
     /* ================================================================== */
     $form.on('submit', function (e) {
         e.preventDefault();
@@ -172,64 +246,45 @@
             return;
         }
 
-        // Submit bookings sequentially for each selected spot
-        let completed = 0;
-        let errors    = [];
+        // Stuur alle spots in één API call (VB-99)
+        $.ajax({
+            url: API + 'bookings/bulk',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                spot_ids: selected.map(function (s) { return s.id; }),
+                layout_id: layoutId,
+                customer_name: customerName,
+                customer_email: customerEmail,
+                customer_phone: customerPhone,
+                notes: notes,
+            }),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', NONCE);
+            },
+            success: function (res) {
+                $btn.prop('disabled', false).text('Confirm Booking');
 
-        selected.forEach(function (spot) {
-            $.ajax({
-                url: API + 'booking',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    spot_id: spot.id,
-                    layout_id: layoutId,
-                    customer_name: customerName,
-                    customer_email: customerEmail,
-                    customer_phone: customerPhone,
-                    notes: notes,
-                }),
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', NONCE);
-                },
-                success: function () {
-                    completed++;
-                    checkComplete();
-                },
-                error: function (xhr) {
-                    const res = xhr.responseJSON;
-                    errors.push((spot.label || 'Spot #' + spot.id) + ': ' + (res?.message || 'Error'));
-                    completed++;
-                    checkComplete();
-                },
-            });
-        });
-
-        function checkComplete() {
-            if (completed < selected.length) return;
-
-            $btn.prop('disabled', false).text('Confirm Booking');
-
-            if (errors.length === 0) {
                 showFormMessage(
-                    '🎉 Booking confirmed! You will receive a confirmation email shortly.',
+                    '🎉 Boeking bevestigd! Je ontvangt een bevestigingsmail.',
                     'success'
                 );
                 $form[0].reset();
                 selected = [];
                 updateSelectionBar();
 
-                // Reload spots to reflect new bookings
                 setTimeout(function () {
                     $modal.hide();
                     loadSpots();
                 }, 2000);
-            } else {
-                showFormMessage('Some bookings had issues: ' + errors.join('; '), 'error');
-                // Reload anyway to update availability
+            },
+            error: function (xhr) {
+                $btn.prop('disabled', false).text('Confirm Booking');
+                const res = xhr.responseJSON;
+                showFormMessage(res?.message || 'Er is iets misgegaan. Probeer het opnieuw.', 'error');
                 loadSpots();
-            }
-        }
+            },
+        });
     });
 
     function showFormMessage(text, type) {

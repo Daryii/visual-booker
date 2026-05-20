@@ -15,6 +15,7 @@
     let spots = [];          // local state
     let selectedSpotId = null;
     let isDragging = false;
+    let gridSize = 5; // raster grootte in procenten
 
     /* ================================================================== */
     /*  1. Image Picker (WP Media)                                         */
@@ -135,6 +136,12 @@
 
                 let newX = Math.max(0, Math.min(100 - parseFloat(spot.width), startLeft + dx));
                 let newY = Math.max(0, Math.min(100 - parseFloat(spot.height), startTop + dy));
+
+                // Snap naar grid als het raster actief is
+                if ($canvas.hasClass('vb-grid-active')) {
+                    newX = Math.round(newX / gridSize) * gridSize;
+                    newY = Math.round(newY / gridSize) * gridSize;
+                }
 
                 $el.css({ left: newX + '%', top: newY + '%' });
                 spot.pos_x = parseFloat(newX.toFixed(2));
@@ -379,13 +386,20 @@
         });
     });
 
-    /* ================================================================== */
-    /*  Init                                                               */
-    /* ================================================================== */
-   /* ================================================================== */
-    /*  Init                                                               */
-    /* ================================================================== */
+    $('#vb-toggle-grid').on('click', function () {
+        $canvas.toggleClass('vb-grid-active');
+        $(this).toggleClass('vb-grid-is-active');
+    });
     
+    $('#vb-grid-size').on('change', function () {
+        gridSize = parseInt($(this).val());
+        $canvas.css('--grid-size', gridSize + '%');
+    });
+
+    /* ================================================================== */
+    /*  Init                                                               */
+    /* ================================================================== */
+
     const $bgImage = $('#vb-bg-image');
 
     if ($bgImage.length && $bgImage[0].complete) {

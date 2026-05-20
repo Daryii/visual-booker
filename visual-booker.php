@@ -3,7 +3,7 @@
  * Plugin Name: Visual Booker
  * Plugin URI:  https://github.com/AbhishekDas/visual-booker
  * Description: Interactive seat/spot booking on custom images or maps. Users upload a floor plan, map, or layout image, place bookable spots on it via a drag-and-drop admin builder, and visitors can select & book spots on the front end.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Abhishek Das
  * Author URI:  https://github.com/AbhishekDas
  * License:     GPL-2.0+
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
-define( 'VB_VERSION', '1.0.0' );
+define( 'VB_VERSION', '1.0.1' );
 define( 'VB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'VB_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -53,20 +53,22 @@ function vb_admin_assets( $hook ) {
         return;
     }
 
+    $ver = WP_DEBUG ? null : VB_VERSION;
+
     wp_enqueue_media(); // WP media uploader
 
     wp_enqueue_style(
         'vb-admin-css',
         VB_PLUGIN_URL . 'admin/css/admin.css',
         array(),
-        VB_VERSION
+        $ver
     );
 
     wp_enqueue_script(
         'vb-admin-js',
         VB_PLUGIN_URL . 'admin/js/admin.js',
         array( 'jquery', 'jquery-ui-draggable', 'jquery-ui-droppable', 'wp-util' ),
-        VB_VERSION,
+        $ver,
         true
     );
 
@@ -84,18 +86,20 @@ function vb_admin_assets( $hook ) {
 function vb_public_assets() {
     // Only load when shortcode is present (also enqueued in shortcode render)
     error_log('1. vb_public_assets: ' . time());
+    $ver = WP_DEBUG ? null : VB_VERSION;
+
     wp_register_style(
         'vb-public-css',
         VB_PLUGIN_URL . 'public/css/public.css',
         array(),
-        VB_VERSION
+        $ver
     );
 
     wp_register_script(
         'vb-public-js',
         VB_PLUGIN_URL . 'public/js/public.js',
         array( 'jquery' ),
-        VB_VERSION,
+        $ver,
         true
     );
 }
@@ -123,10 +127,24 @@ function vb_settings_page() {
                 <tr>
                     <th><label for="vb_currency_symbol">Valuta symbool</label></th>
                     <td>
-                        <input type="text" id="vb_currency_symbol" name="vb_currency_symbol" 
-                               value="<?php echo esc_attr( get_option( 'vb_currency_symbol', '€' ) ); ?>" 
-                               class="regular-text" />
-                        <p class="description">Bijv. €, $, £, ₹</p>
+                        <?php $current = get_option( 'vb_currency_symbol', '€' ); ?>
+                        <select id="vb_currency_symbol" name="vb_currency_symbol">
+                            <?php
+                            $currencies = [
+                                '€' => '€ — Euro',
+                                '$' => '$ — US Dollar',
+                                '£' => '£ — Brits Pond'
+                            ];
+                            foreach ( $currencies as $symbol => $label ) {
+                                printf(
+                                    '<option value="%s"%s>%s</option>',
+                                    esc_attr( $symbol ),
+                                    selected( $current, $symbol, false ),
+                                    esc_html( $label )
+                                );
+                            }
+                            ?>
+                        </select>
                     </td>
                 </tr>
             </table>

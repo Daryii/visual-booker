@@ -19,6 +19,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         </div>
     </div>
 
+    <!-- Zoom controls (VB-72) -->
+    <div class="vb-zoom-bar">
+        <button type="button" class="vb-zoom-btn" id="vb-zoom-out-<?php echo esc_attr( $layout_id ); ?>" aria-label="<?php esc_attr_e( 'Zoom out', 'visual-booker' ); ?>">−</button>
+        <span class="vb-zoom-level" id="vb-zoom-level-<?php echo esc_attr( $layout_id ); ?>">100%</span>
+        <button type="button" class="vb-zoom-btn" id="vb-zoom-in-<?php echo esc_attr( $layout_id ); ?>" aria-label="<?php esc_attr_e( 'Zoom in', 'visual-booker' ); ?>">+</button>
+        <button type="button" class="vb-zoom-btn vb-zoom-reset" id="vb-zoom-reset-<?php echo esc_attr( $layout_id ); ?>" aria-label="<?php esc_attr_e( 'Reset zoom', 'visual-booker' ); ?>"><?php esc_html_e( 'Reset', 'visual-booker' ); ?></button>
+    </div>
+
     <!-- Map / Image canvas -->
     <div class="vb-canvas-container">
         <div class="vb-canvas" id="vb-public-canvas-<?php echo esc_attr( $layout_id ); ?>">

@@ -9,11 +9,30 @@
 /* Canvas */
 #vb-canvas-wrap {
     position: relative;
-    border: 2px dashed #ccc;
+    border: 2px solid #c3c4c7;
+    border-radius: 4px;
     background: #f0f0f0;
     min-height: 400px;
     overflow: auto;
-    display: inline-block;   
+    display: inline-block;
+    width: 100%;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.07);
+}
+
+/* Raster overlay */
+#vb-canvas.vb-grid-active::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.3) 1px, transparent 1px);
+    background-size:var(--grid-size, 5%) var(--grid-size, 5%);
+    pointer-events: none;
+    z-index: 5;
 }
 
 #vb-canvas {
@@ -83,17 +102,38 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 10px;
-    height: 10px;
-    background: rgba(255, 255, 255, 0.8);
+    width: 14px;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.9);
     cursor: nwse-resize;
-    border-top: 1px solid rgba(0, 0, 0, 0.3);
-    border-left: 1px solid rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(0, 0, 0, 0.25);
+    border-left: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 2px 0 0 0;
+}
+
+.vb-spot:hover .vb-resize-handle,
+.vb-spot.vb-spot--selected .vb-resize-handle {
+    background: #fff;
+    box-shadow: -1px -1px 4px rgba(0, 0, 0, 0.15);
 }
 
 /* Spot editor panel */
 #vb-spot-editor {
     border-radius: 4px;
+    border: 1px solid #c3c4c7;
+    background: #fff;
+    padding: 12px 16px;
+    margin-top: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+#vb-spot-editor h4 {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
 }
 
 #vb-spot-editor .form-table th {
@@ -111,12 +151,27 @@
     color: #46b450;
 }
 
+/* Toolbar row — keeps the toolbar box and dropdown on the same line */
+#vb-toolbar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
 /* Toolbar */
 #vb-toolbar {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
     flex-wrap: wrap;
+}
+
+/* Grid toggle active state */
+#vb-toggle-grid.vb-grid-is-active {
+    background: #0073aa;
+    border-color: #006799;
+    color: #fff;
 }
 
 /* Bookings table */

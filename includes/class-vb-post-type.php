@@ -74,89 +74,102 @@ class VB_Post_Type {
         $image_id  = get_post_meta( $post->ID, '_vb_layout_image_id', true );
         ?>
         <div id="vb-builder-wrap">
+
             <!-- Image picker -->
-            <div id="vb-image-picker" style="margin-bottom:12px;">
-                <button type="button" class="button" id="vb-pick-image">
-                    <?php esc_html_e( 'Choose Background Image / Map', 'visual-booker' ); ?>
-                </button>
-                <button type="button" class="button" id="vb-remove-image" style="<?php echo $image_url ? '' : 'display:none'; ?>">
-                    <?php esc_html_e( 'Remove Image', 'visual-booker' ); ?>
-                </button>
-                <input type="hidden" name="vb_layout_image" id="vb-layout-image" value="<?php echo esc_url( $image_url ); ?>" />
-                <input type="hidden" name="vb_layout_image_id" id="vb-layout-image-id" value="<?php echo esc_attr( $image_id ); ?>" />
-            </div>
-
-            <!-- Toolbar -->
-            <div id="vb-toolbar" style="margin-bottom:8px;">
-                <button type="button" class="button button-primary" id="vb-add-spot">
-                    ➕ <?php esc_html_e( 'Add Spot', 'visual-booker' ); ?>
-                </button>
-                <button type="button" class="button" id="vb-save-spots">
-                    💾 <?php esc_html_e( 'Save All Spots', 'visual-booker' ); ?>
-                </button>
-                <span id="vb-save-status" style="margin-left:10px;"></span>
-            </div>
-
-            <!-- The canvas / builder area -->
-            <div id="vb-canvas-wrap">
-                <div id="vb-canvas" data-layout-id="<?php echo esc_attr( $post->ID ); ?>">
-                    <?php if ( $image_url ) : ?>
-                        <img src="<?php echo esc_url( $image_url ); ?>" id="vb-bg-image" alt="" />
-                    <?php else : ?>
-                        <div id="vb-placeholder">
-                            <p><?php esc_html_e( '← Choose a background image to start placing spots.', 'visual-booker' ); ?></p>
-                        </div>
-                    <?php endif; ?>
-                    <!-- Spots are rendered here by JS -->
+                <div id="vb-image-picker" style="margin-bottom:12px;">
+                    <button type="button" class="button" id="vb-pick-image">
+                        <?php esc_html_e( 'Choose Background Image / Map', 'visual-booker' ); ?>
+                    </button>
+                    <button type="button" class="button" id="vb-remove-image" style="<?php echo $image_url ? '' : 'display:none'; ?>">
+                        <?php esc_html_e( 'Remove Image', 'visual-booker' ); ?>
+                    </button>
+                    <input type="hidden" name="vb_layout_image" id="vb-layout-image" value="<?php echo esc_url( $image_url ); ?>" />
+                    <input type="hidden" name="vb_layout_image_id" id="vb-layout-image-id" value="<?php echo esc_attr( $image_id ); ?>" />
                 </div>
-            </div>
 
-            <!-- Spot editor panel (appears when a spot is selected) -->
-            <div id="vb-spot-editor" style="display:none; margin-top:12px; padding:12px; border:1px solid #ccc; background:#f9f9f9;">
-                <h4><?php esc_html_e( 'Edit Spot', 'visual-booker' ); ?></h4>
-                <table class="form-table">
-                    <tr>
-                        <th><label for="vb-spot-label"><?php esc_html_e( 'Label / Number', 'visual-booker' ); ?></label></th>
-                        <td><input type="text" id="vb-spot-label" class="regular-text" /></td>
-                    </tr>
-                    <tr>
-                        <th><label for="vb-spot-type"><?php esc_html_e( 'Type', 'visual-booker' ); ?></label></th>
-                        <td>
-                            <select id="vb-spot-type">
-                               <?php 
-                               $spot_types = VB_DB::get_spot_types();
-                               foreach ($spot_types as $spot_type) {
-                                echo '<option value="' . esc_attr( $spot_type->name ) . '">' . esc_html( $spot_type->label ) . '</option>';
-                               }
-                               ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="vb-spot-price"><?php esc_html_e( 'Price', 'visual-booker' ); ?></label></th>
-                        <td><input type="number" id="vb-spot-price" step="0.01" min="0" value="0" /></td>
-                    </tr>
-                    <tr>
-                        <th><label for="vb-spot-color"><?php esc_html_e( 'Color', 'visual-booker' ); ?></label></th>
-                        <td><input type="color" id="vb-spot-color" value="#4CAF50" /></td>
-                    </tr>
-                    <tr>
-                        <th><label for="vb-spot-status"><?php esc_html_e( 'Status', 'visual-booker' ); ?></label></th>
-                        <td>
-                            <select id="vb-spot-status">
-                                <?php 
-                                $spot_statuses = VB_DB::get_spot_statuses();
-                                foreach ($spot_statuses as $spot_status) {
-                                    echo '<option value="' . esc_attr( $spot_status->name ) . '">' . esc_html( $spot_status->label ) . '</option>';
-                                }
-                                ?>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-                <button type="button" class="button button-primary" id="vb-spot-update"><?php esc_html_e( 'Update Spot', 'visual-booker' ); ?></button>
-                <button type="button" class="button" id="vb-spot-delete" style="color:#a00;"><?php esc_html_e( 'Delete Spot', 'visual-booker' ); ?></button>
-            </div>
+                <!-- Toolbar row -->
+                <div id="vb-toolbar-row">
+                    <div id="vb-toolbar">
+                        <button type="button" class="button button-primary" id="vb-add-spot">
+                            ➕ <?php esc_html_e( 'Add Spot', 'visual-booker' ); ?>
+                        </button>
+                        <button type="button" class="button" id="vb-save-spots">
+                            💾 <?php esc_html_e( 'Save All Spots', 'visual-booker' ); ?>
+                        </button>
+                        <button type="button" class="button" id="vb-toggle-grid">
+                            🔲 <?php esc_html_e( 'Toggle Grid', 'visual-booker' ); ?>
+                        </button>
+                        <span id="vb-save-status"></span>
+                    </div>
+                    <select id="vb-grid-size">
+                        <option value="1">1%</option>
+                        <option value="2">2%</option>
+                        <option value="5" selected>5%</option>
+                        <option value="10">10%</option>
+                    </select>
+                </div>
+
+                <!-- The canvas / builder area -->
+                <div id="vb-canvas-wrap">
+                    <div id="vb-canvas" data-layout-id="<?php echo esc_attr( $post->ID ); ?>">
+                        <?php if ( $image_url ) : ?>
+                            <img src="<?php echo esc_url( $image_url ); ?>" id="vb-bg-image" alt="" />
+                        <?php else : ?>
+                            <div id="vb-placeholder">
+                                <p><?php esc_html_e( '← Choose a background image to start placing spots.', 'visual-booker' ); ?></p>
+                            </div>
+                        <?php endif; ?>
+                        <!-- Spots are rendered here by JS -->
+                    </div>
+                </div>
+
+                <!-- Spot editor panel (appears when a spot is selected) -->
+                <div id="vb-spot-editor" style="display:none;">
+                    <h4><?php esc_html_e( 'Edit Spot', 'visual-booker' ); ?></h4>
+                    <table class="form-table">
+                        <tr>
+                            <th><label for="vb-spot-label"><?php esc_html_e( 'Label / Number', 'visual-booker' ); ?></label></th>
+                            <td><input type="text" id="vb-spot-label" class="regular-text" /></td>
+                        </tr>
+                        <tr>
+                            <th><label for="vb-spot-type"><?php esc_html_e( 'Type', 'visual-booker' ); ?></label></th>
+                            <td>
+                                <select id="vb-spot-type">
+                                   <?php
+                                   $spot_types = VB_DB::get_spot_types();
+                                   foreach ($spot_types as $spot_type) {
+                                    echo '<option value="' . esc_attr( $spot_type->name ) . '">' . esc_html( $spot_type->label ) . '</option>';
+                                   }
+                                   ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="vb-spot-price"><?php esc_html_e( 'Price', 'visual-booker' ); ?></label></th>
+                            <td><input type="number" id="vb-spot-price" step="0.01" min="0" value="0" /></td>
+                        </tr>
+                        <tr>
+                            <th><label for="vb-spot-color"><?php esc_html_e( 'Color', 'visual-booker' ); ?></label></th>
+                            <td><input type="color" id="vb-spot-color" value="#4CAF50" /></td>
+                        </tr>
+                        <tr>
+                            <th><label for="vb-spot-status"><?php esc_html_e( 'Status', 'visual-booker' ); ?></label></th>
+                            <td>
+                                <select id="vb-spot-status">
+                                    <?php
+                                    $spot_statuses = VB_DB::get_spot_statuses();
+                                    foreach ($spot_statuses as $spot_status) {
+                                        echo '<option value="' . esc_attr( $spot_status->name ) . '">' . esc_html( $spot_status->label ) . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <button type="button" class="button button-primary" id="vb-spot-update"><?php esc_html_e( 'Update Spot', 'visual-booker' ); ?></button>
+                    <button type="button" class="button" id="vb-spot-delete" style="color:#a00;"><?php esc_html_e( 'Delete Spot', 'visual-booker' ); ?></button>
+                </div>
+
         </div>
         <?php
     }
@@ -238,5 +251,6 @@ class VB_Post_Type {
         if ( isset( $_POST['vb_layout_image_id'] ) ) {
             update_post_meta( $post_id, '_vb_layout_image_id', absint( $_POST['vb_layout_image_id'] ) );
         }
+
     }
 }

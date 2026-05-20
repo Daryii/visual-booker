@@ -189,12 +189,15 @@ PRIMARY KEY (id)
         $data = wp_parse_args( $data, $defaults );
 
         if ( ! empty( $data['id'] ) ) {
-            $id = absint( $data['id'] );
-            unset( $data['id'] );
+            $id = absint( $data['id'] );    
+            unset( $data['id'] );          
+            $data = array_intersect_key( $data, $defaults ); 
             $wpdb->update( $table, $data, array( 'id' => $id ) );
             return $id;
         }
 
+
+        $data = array_intersect_key( $data, $defaults );
         $wpdb->insert( $table, $data );
         return $wpdb->insert_id;
     }
