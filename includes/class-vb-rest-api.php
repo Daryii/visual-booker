@@ -206,6 +206,10 @@ class VB_REST_API {
     /* ------------------------------------------------------------------ */
 
     public static function create_booking( $request ) {
+        if ( ! wp_verify_nonce( $request->get_header( 'X-WP-Nonce' ), 'wp_rest' ) ) {
+            return new WP_Error( 'invalid_nonce', 'Invalid or missing nonce.', array( 'status' => 403 ) );
+        }
+
         $data = $request->get_json_params();
 
         // Basic validation
@@ -251,6 +255,10 @@ class VB_REST_API {
     }
 
     public static function create_bookings_bulk( $request ) {
+        if ( ! wp_verify_nonce( $request->get_header( 'X-WP-Nonce' ), 'wp_rest' ) ) {
+            return new WP_Error( 'invalid_nonce', 'Invalid or missing nonce.', array( 'status' => 403 ) );
+        }
+
         $data = $request->get_json_params();
 
         // Validatie
