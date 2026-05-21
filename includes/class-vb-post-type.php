@@ -93,6 +93,10 @@ class VB_Post_Type {
                         <button type="button" class="button button-primary" id="vb-add-spot">
                             ➕ <?php esc_html_e( 'Add Spot', 'visual-booker' ); ?>
                         </button>
+                        <div id="vb-shape-picker" style="display:none;">
+                            <button type="button" class="button" data-shape="rectangle"><?php esc_html_e( 'Rectangle', 'visual-booker' ); ?></button>
+                            <button type="button" class="button" data-shape="circle"><?php esc_html_e( 'Circle', 'visual-booker' ); ?></button>
+                        </div>
                         <button type="button" class="button" id="vb-save-spots">
                             💾 <?php esc_html_e( 'Save All Spots', 'visual-booker' ); ?>
                         </button>

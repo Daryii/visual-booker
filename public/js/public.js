@@ -56,8 +56,9 @@
                 ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString('nl-NL')
                 : '';
 
+            const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
             const $spot = $('<div>', {
-                class: 'vb-spot-public ' + stateClass,
+                class: 'vb-spot-public ' + stateClass + shapeClass,
                 'data-id': spot.id,
             })
                 .css({

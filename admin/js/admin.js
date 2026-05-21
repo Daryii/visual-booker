@@ -80,8 +80,9 @@
     }
 
     function renderSpot(spot) {
+        const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
         const $spot = $('<div>', {
-            class: 'vb-spot',
+            class: 'vb-spot' + shapeClass,
             'data-id': spot.id,
         })
             .css({
@@ -236,6 +237,7 @@
         const $el = $canvas.find('.vb-spot[data-id="' + spot.id + '"]');
         $el.css('backgroundColor', spot.color);
         $el.find('.vb-spot-label').text(spot.label);
+        $el.toggleClass('vb-spot--circle', spot.shape === 'circle');
 
         // Auto-save this spot
         saveSpot(spot);
@@ -269,6 +271,12 @@
             alert('Please choose a background image first.');
             return;
         }
+        $('#vb-shape-picker').toggle();
+    });
+
+    $('#vb-shape-picker').on('click', 'button[data-shape]', function () {
+        const shape = $(this).data('shape');
+        $('#vb-shape-picker').hide();
 
         const newSpot = {
             layout_id: layoutId,
@@ -281,6 +289,7 @@
             price: 0,
             status: 'open',
             color: '#4CAF50',
+            shape: shape,
         };
 
         // Save to DB first
