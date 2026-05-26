@@ -141,6 +141,10 @@
     box-sizing: border-box;
 }
 
+.vb-spot-public.vb-spot--circle {
+    border-radius: 50%;
+}
+
 .vb-spot-public:hover:not(.vb-spot--booked):not(.vb-spot--locked) {
     transform: scale(1.1);
     z-index: 20;

@@ -47,41 +47,42 @@ class VB_DB {
 
         $sql = "
 CREATE TABLE {$spots} (
-    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    layout_id   BIGINT UNSIGNED NOT NULL COMMENT 'post ID of vb_layout CPT',
-    label       VARCHAR(100)    NOT NULL DEFAULT '',
-    pos_x       FLOAT           NOT NULL DEFAULT 0 COMMENT 'percentage X on image',
-    pos_y       FLOAT           NOT NULL DEFAULT 0 COMMENT 'percentage Y on image',
-    width       FLOAT           NOT NULL DEFAULT 3 COMMENT 'percentage width',
-    height      FLOAT           NOT NULL DEFAULT 3 COMMENT 'percentage height',
-    spot_type   VARCHAR(20)     NOT NULL DEFAULT 'seat' COMMENT 'seat|table|zone|custom',
-    price       DECIMAL(10,2)   NOT NULL DEFAULT 0.00,
-    status      VARCHAR(20)     NOT NULL DEFAULT 'open' COMMENT 'open|locked|maintenance',
-    color       VARCHAR(7)      NOT NULL DEFAULT '#4CAF50',
-    meta_json   LONGTEXT        NULL COMMENT 'extra data as JSON',
-    sort_order  INT             NOT NULL DEFAULT 0,
-    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id             BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    layout_id      BIGINT UNSIGNED  NOT NULL COMMENT 'post ID of vb_layout CPT',
+    label          VARCHAR(100)     NOT NULL DEFAULT '',
+    pos_x          FLOAT            NOT NULL DEFAULT 0 COMMENT 'percentage X on image',
+    pos_y          FLOAT            NOT NULL DEFAULT 0 COMMENT 'percentage Y on image',
+    width          FLOAT            NOT NULL DEFAULT 3 COMMENT 'percentage width',
+    height         FLOAT            NOT NULL DEFAULT 3 COMMENT 'percentage height',
+    shape          VARCHAR(20)      NOT NULL DEFAULT 'rectangle' COMMENT 'rectangle|circle',
+    spot_type_id   TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    price          DECIMAL(10,2)    NOT NULL DEFAULT 0.00,
+    status_id      TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    color          VARCHAR(7)       NOT NULL DEFAULT '#4CAF50',
+    meta_json      LONGTEXT         NULL COMMENT 'extra data as JSON',
+    sort_order     INT              NOT NULL DEFAULT 0,
+    created_at     DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_layout (layout_id),
-    KEY idx_status (status)
+    KEY idx_status_id (status_id)
 ) {$charset};
 
 CREATE TABLE {$bookings} (
-    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    spot_id     BIGINT UNSIGNED NOT NULL,
-    layout_id   BIGINT UNSIGNED NOT NULL,
-    customer_name   VARCHAR(200) NOT NULL DEFAULT '',
-    customer_email  VARCHAR(200) NOT NULL DEFAULT '',
-    customer_phone  VARCHAR(50)  NOT NULL DEFAULT '',
-    booking_status  VARCHAR(20)  NOT NULL DEFAULT 'pending' COMMENT 'pending|approved|cancelled',
-    notes       TEXT            NULL,
-    meta_json   LONGTEXT        NULL,
-    created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                 BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    spot_id            BIGINT UNSIGNED  NOT NULL,
+    layout_id          BIGINT UNSIGNED  NOT NULL,
+    customer_name      VARCHAR(200)     NOT NULL DEFAULT '',
+    customer_email     VARCHAR(200)     NOT NULL DEFAULT '',
+    customer_phone     VARCHAR(50)      NOT NULL DEFAULT '',
+    booking_status_id  TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    notes              TEXT             NULL,
+    meta_json          LONGTEXT         NULL,
+    created_at         DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at         DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_spot  (spot_id),
     KEY idx_layout(layout_id),
-    KEY idx_status(booking_status)
+    KEY idx_booking_status_id(booking_status_id)
 ) {$charset};
 
 CREATE TABLE {$spot_types} (
@@ -151,7 +152,7 @@ PRIMARY KEY (id)
 
     }
 
-        update_option( 'vb_db_version', VB_VERSION );
+        update_option( 'vb_db_version', VB_DB_VERSION );
     }
 
     /* ------------------------------------------------------------------ */
@@ -173,18 +174,19 @@ PRIMARY KEY (id)
         $table = self::spots_table();
 
         $defaults = array(
-            'layout_id' => 0,
-            'label'     => '',
-            'pos_x'     => 0,
-            'pos_y'     => 0,
-            'width'     => 3,
-            'height'    => 3,
-            'spot_type' => self::get_spot_types()[0]->name,
-            'price'     => 0,
-            'status'    => self::get_spot_statuses()[0]->name,
-            'color'     => '#4CAF50',
-            'meta_json' => null,
-            'sort_order'=> 0,
+            'layout_id'    => 0,
+            'label'        => '',
+            'pos_x'        => 0,
+            'pos_y'        => 0,
+            'width'        => 3,
+            'height'       => 3,
+            'spot_type_id' => 1,
+            'price'        => 0,
+            'status_id'    => 1,
+            'shape'        => 'rectangle',
+            'color'        => '#4CAF50',
+            'meta_json'    => null,
+            'sort_order'   => 0,
         );
         $data = wp_parse_args( $data, $defaults );
 
@@ -219,13 +221,15 @@ PRIMARY KEY (id)
 
     public static function get_bookings_for_layout( $layout_id, $status = null ) {
         global $wpdb;
-        $sql = "SELECT b.*, s.label AS spot_label FROM " . self::bookings_table() . " b
+        $sql = "SELECT b.*, s.label AS spot_label, bs.name AS booking_status
+                FROM " . self::bookings_table() . " b
                 LEFT JOIN " . self::spots_table() . " s ON b.spot_id = s.id
+                LEFT JOIN " . self::booking_statuses() . " bs ON b.booking_status_id = bs.id
                 WHERE b.layout_id = %d";
         $params = array( $layout_id );
 
         if ( $status ) {
-            $sql .= " AND b.booking_status = %s";
+            $sql .= " AND bs.name = %s";
             $params[] = $status;
         }
 
@@ -234,13 +238,23 @@ PRIMARY KEY (id)
         return $wpdb->get_results( $wpdb->prepare( $sql, ...$params ) );
     }
 
-    public static function update_booking_status( $booking_id, $status ) {
+    public static function update_booking_status( $booking_id, $status_name ) {
         global $wpdb;
+        $status_id = self::get_booking_status_id_by_name( $status_name );
+        if ( ! $status_id ) return false;
         return $wpdb->update(
             self::bookings_table(),
-            array( 'booking_status' => $status ),
+            array( 'booking_status_id' => $status_id ),
             array( 'id' => absint( $booking_id ) )
         );
+    }
+
+    public static function get_booking_status_id_by_name( $name ) {
+        global $wpdb;
+        return (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT id FROM " . self::booking_statuses() . " WHERE name = %s LIMIT 1",
+            $name
+        ) );
     }
 
     /**
@@ -250,21 +264,20 @@ PRIMARY KEY (id)
         global $wpdb;
 
         $statuses = self::get_booking_statuses();
-        $active_statuses = array();
-        foreach ($statuses as $s){
-            if ($s->name !== "cancelled"){
-                $active_statuses[] = $s->name;
+        $active_ids = array();
+        foreach ( $statuses as $s ) {
+            if ( $s->name !== 'cancelled' ) {
+                $active_ids[] = (int) $s->id;
             }
         }
 
-        $placeholders = implode(',', array_fill(0, count($active_statuses), '%s'));
-
+        $placeholders = implode( ',', array_fill( 0, count( $active_ids ), '%d' ) );
 
         return $wpdb->get_col(
             $wpdb->prepare(
                 "SELECT spot_id FROM " . self::bookings_table() . "
-                 WHERE layout_id = %d AND booking_status IN ($placeholders)",
-                array_merge( array($layout_id), $active_statuses)
+                 WHERE layout_id = %d AND booking_status_id IN ($placeholders)",
+                array_merge( array( $layout_id ), $active_ids )
             )
         );
     }
@@ -288,5 +301,54 @@ PRIMARY KEY (id)
         return $wpdb->get_results( "SELECT * FROM " . self::booking_statuses() );
     }
 
+    /* ------------------------------------------------------------------ */
+    /*  Migration: tekstvelden → ID-kolommen (eenmalig)                    */
+    /* ------------------------------------------------------------------ */
+
+    public static function run_migrations() {
+        global $wpdb;
+
+        if ( get_option( 'vb_db_version' ) >= VB_DB_VERSION ) return;
+
+        // --- wp_vb_spots ---
+        $has_old = $wpdb->get_results( "SHOW COLUMNS FROM " . self::spots_table() . " LIKE 'spot_type'" );
+        if ( ! empty( $has_old ) ) {
+            $wpdb->query( "ALTER TABLE " . self::spots_table() . "
+                ADD COLUMN spot_type_id TINYINT UNSIGNED NOT NULL DEFAULT 1 AFTER spot_type,
+                ADD COLUMN status_id    TINYINT UNSIGNED NOT NULL DEFAULT 1 AFTER status" );
+
+            $wpdb->query( "UPDATE " . self::spots_table() . " s
+                INNER JOIN " . self::spot_types() . " t ON t.name = s.spot_type
+                SET s.spot_type_id = t.id" );
+
+            $wpdb->query( "UPDATE " . self::spots_table() . " s
+                INNER JOIN " . self::spot_statuses() . " st ON st.name = s.status
+                SET s.status_id = st.id" );
+
+            $wpdb->query( "ALTER TABLE " . self::spots_table() . "
+                DROP KEY idx_status,
+                DROP COLUMN spot_type,
+                DROP COLUMN status,
+                ADD KEY idx_status_id (status_id)" );
+        }
+
+        // --- wp_vb_bookings ---
+        $has_old = $wpdb->get_results( "SHOW COLUMNS FROM " . self::bookings_table() . " LIKE 'booking_status'" );
+        if ( ! empty( $has_old ) ) {
+            $wpdb->query( "ALTER TABLE " . self::bookings_table() . "
+                ADD COLUMN booking_status_id TINYINT UNSIGNED NOT NULL DEFAULT 1 AFTER booking_status" );
+
+            $wpdb->query( "UPDATE " . self::bookings_table() . " b
+                INNER JOIN " . self::booking_statuses() . " bs ON bs.name = b.booking_status
+                SET b.booking_status_id = bs.id" );
+
+            $wpdb->query( "ALTER TABLE " . self::bookings_table() . "
+                DROP KEY idx_status,
+                DROP COLUMN booking_status,
+                ADD KEY idx_booking_status_id (booking_status_id)" );
+        }
+
+        update_option( 'vb_db_version', VB_DB_VERSION );
+    }
 
 }
