@@ -382,6 +382,12 @@
                         })
                     );
                 }
+
+                if (action === 'cancelled') {
+                    setTimeout(function () {
+                        $row.fadeOut(300, function () { $(this).remove(); });
+                    }, 1500);
+                }
             },
         });
     });
