@@ -152,7 +152,7 @@ PRIMARY KEY (id)
 
     }
 
-        update_option( 'vb_db_version', VB_VERSION );
+        update_option( 'vb_db_version', VB_DB_VERSION );
     }
 
     /* ------------------------------------------------------------------ */
@@ -301,5 +301,54 @@ PRIMARY KEY (id)
         return $wpdb->get_results( "SELECT * FROM " . self::booking_statuses() );
     }
 
+    /* ------------------------------------------------------------------ */
+    /*  Migration: tekstvelden → ID-kolommen (eenmalig)                    */
+    /* ------------------------------------------------------------------ */
+
+    public static function run_migrations() {
+        global $wpdb;
+
+        if ( get_option( 'vb_db_version' ) >= VB_DB_VERSION ) return;
+
+        // --- wp_vb_spots ---
+        $has_old = $wpdb->get_results( "SHOW COLUMNS FROM " . self::spots_table() . " LIKE 'spot_type'" );
+        if ( ! empty( $has_old ) ) {
+            $wpdb->query( "ALTER TABLE " . self::spots_table() . "
+                ADD COLUMN spot_type_id TINYINT UNSIGNED NOT NULL DEFAULT 1 AFTER spot_type,
+                ADD COLUMN status_id    TINYINT UNSIGNED NOT NULL DEFAULT 1 AFTER status" );
+
+            $wpdb->query( "UPDATE " . self::spots_table() . " s
+                INNER JOIN " . self::spot_types() . " t ON t.name = s.spot_type
+                SET s.spot_type_id = t.id" );
+
+            $wpdb->query( "UPDATE " . self::spots_table() . " s
+                INNER JOIN " . self::spot_statuses() . " st ON st.name = s.status
+                SET s.status_id = st.id" );
+
+            $wpdb->query( "ALTER TABLE " . self::spots_table() . "
+                DROP KEY idx_status,
+                DROP COLUMN spot_type,
+                DROP COLUMN status,
+                ADD KEY idx_status_id (status_id)" );
+        }
+
+        // --- wp_vb_bookings ---
+        $has_old = $wpdb->get_results( "SHOW COLUMNS FROM " . self::bookings_table() . " LIKE 'booking_status'" );
+        if ( ! empty( $has_old ) ) {
+            $wpdb->query( "ALTER TABLE " . self::bookings_table() . "
+                ADD COLUMN booking_status_id TINYINT UNSIGNED NOT NULL DEFAULT 1 AFTER booking_status" );
+
+            $wpdb->query( "UPDATE " . self::bookings_table() . " b
+                INNER JOIN " . self::booking_statuses() . " bs ON bs.name = b.booking_status
+                SET b.booking_status_id = bs.id" );
+
+            $wpdb->query( "ALTER TABLE " . self::bookings_table() . "
+                DROP KEY idx_status,
+                DROP COLUMN booking_status,
+                ADD KEY idx_booking_status_id (booking_status_id)" );
+        }
+
+        update_option( 'vb_db_version', VB_DB_VERSION );
+    }
 
 }

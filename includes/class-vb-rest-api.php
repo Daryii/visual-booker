@@ -133,9 +133,9 @@ class VB_REST_API {
        $data['width'] = floatval($data['width'] ?? 3);
        $data['height'] = floatval($data['height'] ?? 3);
        $data['price'] = floatval($data['price'] ?? 0);
-       $data['color'] = sanitize_hex_color($data['color'] ?? '#4CAF50') ?: '#4CAF50';
-       $data['status'] = sanitize_text_field($data['status'] ?? 'open');
-       $data['spot_type'] = sanitize_text_field($data['spot_type'] ?? 'seat');
+       $data['color']        = sanitize_hex_color($data['color'] ?? '#4CAF50') ?: '#4CAF50';
+       $data['status_id']    = absint($data['status_id'] ?? 1);
+       $data['spot_type_id'] = absint($data['spot_type_id'] ?? 1);
 
         $id   = VB_DB::upsert_spot( $data );
         return rest_ensure_response( array( 'success' => true, 'id' => $id ) );
@@ -182,9 +182,9 @@ class VB_REST_API {
             $s['width'] = floatval( $s['width'] ?? 3 );
             $s['height'] = floatval( $s['height'] ?? 3 );
             $s['price'] = floatval( $s['price'] ?? 0 );
-            $s['color'] = sanitize_hex_color( $s['color'] ?? '#4CAF50' ) ?: '#4CAF50';
-            $s['status'] = sanitize_text_field( $s['status'] ?? 'open');
-            $s['spot_type'] = sanitize_text_field( $s['spot_type'] ?? 'seat');
+            $s['color']        = sanitize_hex_color( $s['color'] ?? '#4CAF50' ) ?: '#4CAF50';
+            $s['status_id']    = absint( $s['status_id'] ?? 1 );
+            $s['spot_type_id'] = absint( $s['spot_type_id'] ?? 1 );
 
             $ids[] = VB_DB::upsert_spot($s);
         }
@@ -231,9 +231,9 @@ class VB_REST_API {
             'layout_id'      => absint( $data['layout_id'] ),
             'customer_name'  => sanitize_text_field( $data['customer_name'] ),
             'customer_email' => sanitize_email( $data['customer_email'] ),
-            'customer_phone' => sanitize_text_field( $data['customer_phone'] ?? '' ),
-            'booking_status' => 'pending',
-            'notes'          => sanitize_textarea_field( $data['notes'] ?? '' ),
+            'customer_phone'    => sanitize_text_field( $data['customer_phone'] ?? '' ),
+            'booking_status_id' => VB_DB::get_booking_status_id_by_name( 'pending' ),
+            'notes'             => sanitize_textarea_field( $data['notes'] ?? '' ),
         );
 
         $id = VB_DB::create_booking( $booking_data );
@@ -295,8 +295,8 @@ class VB_REST_API {
                 'customer_name'  => $customer_name,
                 'customer_email' => $customer_email,
                 'customer_phone' => $customer_phone,
-                'booking_status' => 'pending',
-                'notes'          => $notes,
+                'booking_status_id' => VB_DB::get_booking_status_id_by_name( 'pending' ),
+                'notes'             => $notes,
             ) );
 
             if ( $id ) {
