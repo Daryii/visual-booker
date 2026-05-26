@@ -80,8 +80,9 @@
     }
 
     function renderSpot(spot) {
+        const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
         const $spot = $('<div>', {
-            class: 'vb-spot',
+            class: 'vb-spot' + shapeClass,
             'data-id': spot.id,
         })
             .css({
@@ -206,10 +207,10 @@
 
         // Populate editor
         $('#vb-spot-label').val(spot.label);
-        $('#vb-spot-type').val(spot.spot_type || 'seat');
+        $('#vb-spot-type').val(spot.spot_type_id || 1);
         $('#vb-spot-price').val(spot.price || 0);
         $('#vb-spot-color').val(spot.color || '#4CAF50');
-        $('#vb-spot-status').val(spot.status || 'open');
+        $('#vb-spot-status').val(spot.status_id || 1);
         $('#vb-spot-editor').slideDown(200);
     }
 
@@ -226,16 +227,17 @@
         const spot = spots.find(s => s.id == selectedSpotId);
         if (!spot) return;
 
-        spot.label     = $('#vb-spot-label').val();
-        spot.spot_type = $('#vb-spot-type').val();
-        spot.price     = parseFloat($('#vb-spot-price').val()) || 0;
-        spot.color     = $('#vb-spot-color').val();
-        spot.status    = $('#vb-spot-status').val();
+        spot.label        = $('#vb-spot-label').val();
+        spot.spot_type_id = parseInt($('#vb-spot-type').val());
+        spot.price        = parseFloat($('#vb-spot-price').val()) || 0;
+        spot.color        = $('#vb-spot-color').val();
+        spot.status_id    = parseInt($('#vb-spot-status').val());
 
         // Re-render this spot
         const $el = $canvas.find('.vb-spot[data-id="' + spot.id + '"]');
         $el.css('backgroundColor', spot.color);
         $el.find('.vb-spot-label').text(spot.label);
+        $el.toggleClass('vb-spot--circle', spot.shape === 'circle');
 
         // Auto-save this spot
         saveSpot(spot);
@@ -269,6 +271,12 @@
             alert('Please choose a background image first.');
             return;
         }
+        $('#vb-shape-picker').toggle();
+    });
+
+    $('#vb-shape-picker').on('click', 'button[data-shape]', function () {
+        const shape = $(this).data('shape');
+        $('#vb-shape-picker').hide();
 
         const newSpot = {
             layout_id: layoutId,
@@ -277,10 +285,11 @@
             pos_y: 10 + Math.random() * 20,
             width: 3,
             height: 3,
-            spot_type: 'seat',
+            spot_type_id: 1,
             price: 0,
-            status: 'open',
+            status_id: 1,
             color: '#4CAF50',
+            shape: shape,
         };
 
         // Save to DB first

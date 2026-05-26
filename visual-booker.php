@@ -3,7 +3,7 @@
  * Plugin Name: Visual Booker
  * Plugin URI:  https://github.com/AbhishekDas/visual-booker
  * Description: Interactive seat/spot booking on custom images or maps. Users upload a floor plan, map, or layout image, place bookable spots on it via a drag-and-drop admin builder, and visitors can select & book spots on the front end.
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      Abhishek Das
  * Author URI:  https://github.com/AbhishekDas
  * License:     GPL-2.0+
@@ -17,7 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
-define( 'VB_VERSION', '1.0.1' );
+define( 'VB_VERSION', '1.0.2' );
+define( 'VB_DB_VERSION', '1.0.0' );
 define( 'VB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'VB_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -38,6 +39,7 @@ register_activation_hook( __FILE__, array( 'VB_DB', 'create_tables' ) );
 /* ------------------------------------------------------------------ */
 /*  Init                                                               */
 /* ------------------------------------------------------------------ */
+add_action( 'plugins_loaded', array( 'VB_DB', 'run_migrations' ) );
 add_action( 'init', array( 'VB_Post_Type', 'register' ) );
 add_action( 'rest_api_init', array( 'VB_REST_API', 'register_routes' ) );
 add_action( 'admin_enqueue_scripts', 'vb_admin_assets' );

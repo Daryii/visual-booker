@@ -44,8 +44,8 @@
 
         spots.forEach(function (spot) {
             const isBooked = spot.booked;
-            const openStatus = vbPublic.spotStatuses[0].name;
-            const isLocked = spot.status !== openStatus;
+            const openStatusId = vbPublic.spotStatuses[0].id;
+            const isLocked = spot.status_id != openStatusId;
             
 
             let stateClass = 'vb-spot--open';
@@ -56,8 +56,9 @@
                 ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString('nl-NL')
                 : '';
 
+            const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
             const $spot = $('<div>', {
-                class: 'vb-spot-public ' + stateClass,
+                class: 'vb-spot-public ' + stateClass + shapeClass,
                 'data-id': spot.id,
             })
                 .css({

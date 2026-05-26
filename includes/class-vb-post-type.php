@@ -93,6 +93,10 @@ class VB_Post_Type {
                         <button type="button" class="button button-primary" id="vb-add-spot">
                             ➕ <?php esc_html_e( 'Add Spot', 'visual-booker' ); ?>
                         </button>
+                        <div id="vb-shape-picker" style="display:none;">
+                            <button type="button" class="button" data-shape="rectangle"><?php esc_html_e( 'Rectangle', 'visual-booker' ); ?></button>
+                            <button type="button" class="button" data-shape="circle"><?php esc_html_e( 'Circle', 'visual-booker' ); ?></button>
+                        </div>
                         <button type="button" class="button" id="vb-save-spots">
                             💾 <?php esc_html_e( 'Save All Spots', 'visual-booker' ); ?>
                         </button>
@@ -138,7 +142,7 @@ class VB_Post_Type {
                                    <?php
                                    $spot_types = VB_DB::get_spot_types();
                                    foreach ($spot_types as $spot_type) {
-                                    echo '<option value="' . esc_attr( $spot_type->name ) . '">' . esc_html( $spot_type->label ) . '</option>';
+                                    echo '<option value="' . esc_attr( $spot_type->id ) . '">' . esc_html( $spot_type->label ) . '</option>';
                                    }
                                    ?>
                                 </select>
@@ -159,7 +163,7 @@ class VB_Post_Type {
                                     <?php
                                     $spot_statuses = VB_DB::get_spot_statuses();
                                     foreach ($spot_statuses as $spot_status) {
-                                        echo '<option value="' . esc_attr( $spot_status->name ) . '">' . esc_html( $spot_status->label ) . '</option>';
+                                        echo '<option value="' . esc_attr( $spot_status->id ) . '">' . esc_html( $spot_status->label ) . '</option>';
                                     }
                                     ?>
                                 </select>
