@@ -220,6 +220,12 @@ class VB_REST_API {
             }
         }
 
+        // E-mailadres valideren
+        $customer_email = sanitize_email( $data['customer_email'] );
+        if ( ! is_email( $customer_email ) ) {
+            return new WP_Error( 'invalid_email', 'Ongeldig e-mailadres.', array( 'status' => 400 ) );
+        }
+
         // Check if spot is already booked
         $booked = VB_DB::get_booked_spot_ids( (int) $data['layout_id'] );
         if ( in_array( (string) $data['spot_id'], $booked, true ) ) {
@@ -230,7 +236,7 @@ class VB_REST_API {
             'spot_id'        => absint( $data['spot_id'] ),
             'layout_id'      => absint( $data['layout_id'] ),
             'customer_name'  => sanitize_text_field( $data['customer_name'] ),
-            'customer_email' => sanitize_email( $data['customer_email'] ),
+            'customer_email' => $customer_email,
             'customer_phone'    => sanitize_text_field( $data['customer_phone'] ?? '' ),
             'booking_status_id' => VB_DB::get_booking_status_id_by_name( 'pending' ),
             'notes'             => sanitize_textarea_field( $data['notes'] ?? '' ),
@@ -274,6 +280,9 @@ class VB_REST_API {
         $layout_id      = absint( $data['layout_id'] );
         $customer_name  = sanitize_text_field( $data['customer_name'] );
         $customer_email = sanitize_email( $data['customer_email'] );
+        if ( ! is_email( $customer_email ) ) {
+            return new WP_Error( 'invalid_email', 'Ongeldig e-mailadres.', array( 'status' => 400 ) );
+        }
         $customer_phone = sanitize_text_field( $data['customer_phone'] ?? '' );
         $notes          = sanitize_textarea_field( $data['notes'] ?? '' );
 
