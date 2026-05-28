@@ -226,6 +226,17 @@ class VB_REST_API {
             return new WP_Error( 'invalid_email', 'Ongeldig e-mailadres.', array( 'status' => 400 ) );
         }
 
+        // Layout bestaat?
+        $layout = get_post( absint( $data['layout_id'] ) );
+        if ( ! $layout || $layout->post_type !== 'vb_layout' ) {
+            return new WP_Error( 'invalid_layout', 'Layout niet gevonden.', array( 'status' => 404 ) );
+        }
+
+        // Spot bestaat?
+        if ( ! VB_DB::spot_exists( absint( $data['spot_id'] ) ) ) {
+            return new WP_Error( 'invalid_spot', 'Spot niet gevonden.', array( 'status' => 404 ) );
+        }
+
         // Check if spot is already booked
         $booked = VB_DB::get_booked_spot_ids( (int) $data['layout_id'] );
         if ( in_array( (string) $data['spot_id'], $booked, true ) ) {
@@ -286,6 +297,12 @@ class VB_REST_API {
         $customer_phone = sanitize_text_field( $data['customer_phone'] ?? '' );
         $notes          = sanitize_textarea_field( $data['notes'] ?? '' );
 
+        // Layout bestaat?
+        $layout = get_post( $layout_id );
+        if ( ! $layout || $layout->post_type !== 'vb_layout' ) {
+            return new WP_Error( 'invalid_layout', 'Layout niet gevonden.', array( 'status' => 404 ) );
+        }
+
         // Controleer welke spots al geboekt zijn
         $already_booked = VB_DB::get_booked_spot_ids( $layout_id );
         $booking_ids    = array();
@@ -293,6 +310,10 @@ class VB_REST_API {
 
         foreach ( $data['spot_ids'] as $spot_id ) {
             $spot_id = absint( $spot_id );
+            if ( ! VB_DB::spot_exists( $spot_id ) ) {
+                $skipped[] = $spot_id;
+                continue;
+            }
             if ( in_array( (string) $spot_id, $already_booked, true ) ) {
                 $skipped[] = $spot_id;
                 continue;

@@ -209,6 +209,14 @@ PRIMARY KEY (id)
         return $wpdb->delete( self::spots_table(), array( 'id' => absint( $id ) ) );
     }
 
+    public static function spot_exists( $id ) {
+        global $wpdb;
+        return (bool) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM " . self::spots_table() . " WHERE id = %d",
+            absint( $id )
+        ) );
+    }
+
     /* ------------------------------------------------------------------ */
     /*  Booking helpers                                                     */
     /* ------------------------------------------------------------------ */
