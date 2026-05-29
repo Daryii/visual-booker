@@ -103,14 +103,20 @@ class VB_Post_Type {
                         <button type="button" class="button" id="vb-toggle-grid">
                             🔲 <?php esc_html_e( 'Toggle Grid', 'visual-booker' ); ?>
                         </button>
+                        <button type="button" class="button" id="vb-toggle-max-spots">
+                            🎯 <?php esc_html_e( 'Max spots per boeking', 'visual-booker' ); ?>
+                        </button>
                         <span id="vb-save-status"></span>
                     </div>
-                    <select id="vb-grid-size">
+                    <select id="vb-grid-size" style="display:none;">
                         <option value="1">1%</option>
                         <option value="2">2%</option>
                         <option value="5" selected>5%</option>
                         <option value="10">10%</option>
                     </select>
+                    <input type="number" id="vb-max-spots-per-booking" name="vb_max_spots_per_booking" min="1" style="width:70px; display:none;"
+                        title="<?php esc_attr_e( 'Max spots per boeking', 'visual-booker' ); ?>"
+                        value="<?php echo esc_attr( get_post_meta( $post->ID, '_vb_max_spots_per_booking', true ) ?: 10 ); ?>" />
                 </div>
 
                 <!-- The canvas / builder area -->
@@ -254,6 +260,9 @@ class VB_Post_Type {
         }
         if ( isset( $_POST['vb_layout_image_id'] ) ) {
             update_post_meta( $post_id, '_vb_layout_image_id', absint( $_POST['vb_layout_image_id'] ) );
+        }
+        if ( isset( $_POST['vb_max_spots_per_booking'] ) ) {
+            update_post_meta( $post_id, '_vb_max_spots_per_booking', absint( $_POST['vb_max_spots_per_booking'] ) ?: 10 );
         }
 
     }

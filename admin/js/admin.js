@@ -404,11 +404,17 @@
     $('#vb-toggle-grid').on('click', function () {
         $canvas.toggleClass('vb-grid-active');
         $(this).toggleClass('vb-grid-is-active');
+        $('#vb-grid-size').toggle($canvas.hasClass('vb-grid-active'));
     });
     
     $('#vb-grid-size').on('change', function () {
         gridSize = parseInt($(this).val());
         $canvas.css('--grid-size', gridSize + '%');
+    });
+
+    $('#vb-toggle-max-spots').on('click', function () {
+        $(this).toggleClass('vb-grid-is-active');
+        $('#vb-max-spots-per-booking').toggle($(this).hasClass('vb-grid-is-active'));
     });
 
     /* ================================================================== */
