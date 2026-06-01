@@ -303,6 +303,12 @@ class VB_REST_API {
             return new WP_Error( 'invalid_layout', 'Layout niet gevonden.', array( 'status' => 404 ) );
         }
 
+        // Max spots per boeking controleren
+        $max_spots = absint( get_post_meta( $layout_id, '_vb_max_spots_per_booking', true ) ) ?: 10;
+        if ( count( $data['spot_ids'] ) > $max_spots ) {
+            return new WP_Error( 'te_veel_spots', sprintf( 'Je kunt maximaal %d spots tegelijk boeken.', $max_spots ), array( 'status' => 400 ) );
+        }
+
         // Controleer welke spots al geboekt zijn
         $already_booked = VB_DB::get_booked_spot_ids( $layout_id );
         $booking_ids    = array();
