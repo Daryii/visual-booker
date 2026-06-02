@@ -48,7 +48,8 @@ class VB_Shortcode {
             'nonce'    => wp_create_nonce( 'wp_rest' ),
             'layoutId' => $layout_id,
             'spotStatuses' => VB_DB::get_spot_statuses(),
-            'currencySymbol' => get_option('vb_currency_symbol','€')
+            'currencySymbol' => get_option('vb_currency_symbol','€'),
+            'maxSpotsPerBooking' => absint( get_post_meta( $layout_id, '_vb_max_spots_per_booking', true ) ) ?: 10,
         ) );
 
         ob_start();

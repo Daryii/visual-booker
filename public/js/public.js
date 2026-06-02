@@ -16,7 +16,8 @@
     const $selectionBar = $wrapper.find('.vb-selection-bar');
     const $modal        = $wrapper.find('.vb-modal');
     const $form         = $wrapper.find('.vb-booking-form');
-    const currencySymbol = vbPublic.currencySymbol;
+    const currencySymbol    = vbPublic.currencySymbol;
+    const maxSpotsPerBooking = vbPublic.maxSpotsPerBooking || 10;
 
     let spots    = [];
     let selected = [];  // array of spot objects
@@ -101,11 +102,12 @@
         const idx = selected.findIndex(s => s.id == spot.id);
 
         if (idx > -1) {
-            // Deselect
+            // Deselecteer
             selected.splice(idx, 1);
             $el.removeClass('vb-spot--selected').addClass('vb-spot--open');
         } else {
-            // Select
+            // Blokkeer selectie als max bereikt is
+            if (selected.length >= maxSpotsPerBooking) return;
             selected.push(spot);
             $el.removeClass('vb-spot--open').addClass('vb-spot--selected');
         }
