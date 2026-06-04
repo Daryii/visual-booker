@@ -220,6 +220,12 @@ class VB_REST_API {
             }
         }
 
+        // Naam lengte valideren
+        $customer_name_length = mb_strlen( trim( $data['customer_name'] ) );
+        if ( $customer_name_length < 2 || $customer_name_length > 200 ) {
+            return new WP_Error( 'invalid_name', 'Naam moet tussen 2 en 200 tekens zijn.', array( 'status' => 400 ) );
+        }
+
         // E-mailadres valideren
         $customer_email = sanitize_email( $data['customer_email'] );
         if ( ! is_email( $customer_email ) ) {
@@ -290,6 +296,11 @@ class VB_REST_API {
 
         $layout_id      = absint( $data['layout_id'] );
         $customer_name  = sanitize_text_field( $data['customer_name'] );
+        $customer_name_length = mb_strlen( trim( $customer_name ) );
+        if ( $customer_name_length < 2 || $customer_name_length > 200 ) {
+            return new WP_Error( 'invalid_name', 'Naam moet tussen 2 en 200 tekens zijn.', array( 'status' => 400 ) );
+        }
+
         $customer_email = sanitize_email( $data['customer_email'] );
         if ( ! is_email( $customer_email ) ) {
             return new WP_Error( 'invalid_email', 'Ongeldig e-mailadres.', array( 'status' => 400 ) );
