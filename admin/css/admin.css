@@ -92,6 +92,11 @@
     z-index: 30;
 }
 
+.vb-spot.vb-spot--booked {
+    background-color: #ef5350 !important;
+    opacity: 0.7;
+}
+
 .vb-spot .vb-spot-label {
     pointer-events: none;
     white-space: nowrap;

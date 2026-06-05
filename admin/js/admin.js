@@ -80,9 +80,11 @@
     }
 
     function renderSpot(spot) {
+        const isBooked   = spot.booked;
         const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
+        const bookedClass = isBooked ? ' vb-spot--booked' : '';
         const $spot = $('<div>', {
-            class: 'vb-spot' + shapeClass,
+            class: 'vb-spot' + shapeClass + bookedClass,
             'data-id': spot.id,
         })
             .css({
@@ -90,7 +92,7 @@
                 top: spot.pos_y + '%',
                 width: spot.width + '%',
                 height: spot.height + '%',
-                backgroundColor: spot.color || '#4CAF50',
+                backgroundColor: isBooked ? undefined : (spot.color || '#4CAF50'),
             })
             .append($('<span>', { class: 'vb-spot-label', text: spot.label || '' }))
             .append($('<div>', { class: 'vb-resize-handle' }));

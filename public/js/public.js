@@ -46,12 +46,12 @@
         spots.forEach(function (spot) {
             const isBooked = spot.booked;
             const openStatusId = vbPublic.spotStatuses[0].id;
-            const isLocked = spot.status_id != openStatusId;
+            const isUnavailable = spot.status_id != openStatusId;
             
 
             let stateClass = 'vb-spot--open';
             if (isBooked) stateClass = 'vb-spot--booked';
-            else if (isLocked) stateClass = 'vb-spot--locked';
+            else if (isUnavailable) stateClass = 'vb-spot--unavailable';
 
             const priceText = parseFloat(spot.price) > 0
                 ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString('nl-NL')
@@ -74,10 +74,11 @@
                     $('<div>', {
                         class: 'vb-tooltip',
                         text: (spot.label || 'Spot #' + spot.id) + priceText +
-                              (isBooked ? ' (Booked)' : isLocked ? ' (Unavailable)' : ''),
+                              (isBooked ? ' (Booked)' : isUnavailable ? ' (Unavailable)' : ''),
                     })
                 );
 
+            // Tooltip richting bepalen op basis van positie in canvas    
             $spot.on('mouseenter', function () {
                 const spotTop = this.getBoundingClientRect().top;
                 const containerTop = $wrapper.find('.vb-canvas-container')[0].getBoundingClientRect().top;
@@ -85,7 +86,7 @@
             });
 
             // Click handler for selectable spots
-            if (!isBooked && !isLocked) {
+            if (!isBooked && !isUnavailable) {
                 $spot.on('click', function () {
                     toggleSelection(spot, $spot);
                 });
@@ -131,7 +132,7 @@
     }
 
     /* ================================================================== */
-    /*  4. Zoom (VB-72)                                                    */
+    /*  4. Zoom                                                    */
     /* ================================================================== */
     function applyZoom( newLevel ) {
         zoomLevel = Math.max( ZOOM_MIN, Math.min( ZOOM_MAX, newLevel ) );
