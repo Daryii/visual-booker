@@ -68,7 +68,7 @@ class VB_REST_API {
             'permission_callback' => array( __CLASS__, 'admin_check' ),
         ) );
 
-        // GET bookings for a layout (admin)
+        // GET boekingen voor een layout (admin)
         register_rest_route( $ns, '/bookings/(?P<layout_id>\d+)', array(
             'methods'             => 'GET',
             'callback'            => array( __CLASS__, 'get_bookings' ),

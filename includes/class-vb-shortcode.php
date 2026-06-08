@@ -1,6 +1,6 @@
 <?php
 /**
- * [visual_booker id="123"] shortcode.
+ * [visual_booker id="123"] shortcode registratie en weergave.
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -40,7 +40,7 @@ class VB_Shortcode {
             VB_VERSION,
             true
         );
-        // Enqueue assets
+        // Bestanden laden
         wp_enqueue_style( 'vb-public-css' );
         wp_enqueue_script( 'vb-public-js' );
         wp_localize_script( 'vb-public-js', 'vbPublic', array(
@@ -58,7 +58,7 @@ class VB_Shortcode {
     }
 }
 
-// Register shortcode immediately
+// Shortcode direct registreren
 VB_Shortcode::init();
 
 

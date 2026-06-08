@@ -1,13 +1,13 @@
 <?php
 /**
- * Database schema – spots + bookings tables.
+ * Databaseschema – spots en boekingen tabellen.
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 class VB_DB {
 
-    /* Table names (with WP prefix) */
+    /* Tabelnamen (met WordPress prefix) */
     public static function spots_table() {
         global $wpdb;
         return $wpdb->prefix . 'vb_spots';
@@ -33,7 +33,7 @@ class VB_DB {
         return $wpdb->prefix . 'vb_booking_statuses';
     }
     /**
-     * Called on plugin activation.
+     * Wordt aangeroepen bij activatie van de plugin.
      */
     public static function create_tables() {
         global $wpdb;
@@ -266,7 +266,7 @@ PRIMARY KEY (id)
     }
 
     /**
-     * Get all booked spot IDs for a layout (approved + pending).
+     * Haalt alle geboekte spot IDs op voor een layout (goedgekeurd + in behandeling).
      */
     public static function get_booked_spot_ids( $layout_id ) {
         global $wpdb;
