@@ -1,8 +1,8 @@
 <?php
 /**
- * Front-end booking template.
+ * Front-end boekingstemplate.
  *
- * Variables available: $layout_id, $image_url, $layout (WP_Post)
+ * Beschikbare variabelen: $layout_id, $image_url, $layout (WP_Post)
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 ?>
@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
             <span class="vb-selected-count">0</span> spot(s)
             &nbsp;|&nbsp;
             <strong>Total:</strong>
-            <span class="vb-selected-total">₹0</span>
+            <span class="vb-selected-total">0</span>
         </div>
         <button type="button" class="vb-btn vb-btn-primary vb-open-booking-form">
             Book Now →

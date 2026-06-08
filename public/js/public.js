@@ -1,8 +1,8 @@
 /**
- * Visual Booker – Front-end Booking Interface
+ * Visual Booker – Frontend Boekingsinterface
  *
- * Handles: loading spots, selection toggle, booking form submission.
- * Each shortcode instance is scoped by layout ID.
+ * Verantwoordelijk voor: spots laden, selectie beheren, boekingsformulier versturen.
+ * Elke shortcode instantie is gekoppeld aan een layout ID.
  */
 (function ($) {
     'use strict';
@@ -16,10 +16,11 @@
     const $selectionBar = $wrapper.find('.vb-selection-bar');
     const $modal        = $wrapper.find('.vb-modal');
     const $form         = $wrapper.find('.vb-booking-form');
-    const currencySymbol = vbPublic.currencySymbol;
+    const currencySymbol    = vbPublic.currencySymbol;
+    const maxSpotsPerBooking = vbPublic.maxSpotsPerBooking || 10;
 
     let spots    = [];
-    let selected = [];  // array of spot objects
+    let selected = [];  // array van geselecteerde spot objecten
 
     let zoomLevel   = 1;
     const ZOOM_MIN  = 1;
@@ -27,7 +28,7 @@
     const ZOOM_STEP = 0.25;
 
     /* ================================================================== */
-    /*  1. Load spots from REST API                                        */
+    /*  1. Spots laden via REST API                                        */
     /* ================================================================== */
     function loadSpots() {
         $.getJSON(API + 'spots/' + layoutId, function (data) {
@@ -37,7 +38,7 @@
     }
 
     /* ================================================================== */
-    /*  2. Render spots on canvas                                          */
+    /*  2. Spots tekenen op canvas                                         */
     /* ================================================================== */
     function renderSpots() {
         $canvas.find('.vb-spot-public').remove();
@@ -45,12 +46,12 @@
         spots.forEach(function (spot) {
             const isBooked = spot.booked;
             const openStatusId = vbPublic.spotStatuses[0].id;
-            const isLocked = spot.status_id != openStatusId;
+            const isUnavailable = spot.status_id != openStatusId;
             
 
             let stateClass = 'vb-spot--open';
             if (isBooked) stateClass = 'vb-spot--booked';
-            else if (isLocked) stateClass = 'vb-spot--locked';
+            else if (isUnavailable) stateClass = 'vb-spot--unavailable';
 
             const priceText = parseFloat(spot.price) > 0
                 ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString('nl-NL')
@@ -73,18 +74,19 @@
                     $('<div>', {
                         class: 'vb-tooltip',
                         text: (spot.label || 'Spot #' + spot.id) + priceText +
-                              (isBooked ? ' (Booked)' : isLocked ? ' (Unavailable)' : ''),
+                              (isBooked ? ' (Booked)' : isUnavailable ? ' (Unavailable)' : ''),
                     })
                 );
 
+            // Tooltip richting bepalen op basis van positie in canvas    
             $spot.on('mouseenter', function () {
                 const spotTop = this.getBoundingClientRect().top;
                 const containerTop = $wrapper.find('.vb-canvas-container')[0].getBoundingClientRect().top;
                 $(this).toggleClass('vb-spot--tooltip-below', spotTop - containerTop < 50);
             });
 
-            // Click handler for selectable spots
-            if (!isBooked && !isLocked) {
+            // Klik handler voor selecteerbare spots
+            if (!isBooked && !isUnavailable) {
                 $spot.on('click', function () {
                     toggleSelection(spot, $spot);
                 });
@@ -95,17 +97,18 @@
     }
 
     /* ================================================================== */
-    /*  3. Selection management                                            */
+    /*  3. Selectie beheren                                                */
     /* ================================================================== */
     function toggleSelection(spot, $el) {
         const idx = selected.findIndex(s => s.id == spot.id);
 
         if (idx > -1) {
-            // Deselect
+            // Deselecteer
             selected.splice(idx, 1);
             $el.removeClass('vb-spot--selected').addClass('vb-spot--open');
         } else {
-            // Select
+            // Blokkeer selectie als max bereikt is
+            if (selected.length >= maxSpotsPerBooking) return;
             selected.push(spot);
             $el.removeClass('vb-spot--open').addClass('vb-spot--selected');
         }
@@ -129,7 +132,7 @@
     }
 
     /* ================================================================== */
-    /*  4. Zoom (VB-72)                                                    */
+    /*  4. Zoom                                                            */
     /* ================================================================== */
     function applyZoom( newLevel ) {
         zoomLevel = Math.max( ZOOM_MIN, Math.min( ZOOM_MAX, newLevel ) );
@@ -142,7 +145,7 @@
     $wrapper.find( '[id^="vb-zoom-reset-"]' ).on( 'click', function () { applyZoom( 1 ); } );
 
     /* ================================================================== */
-    /*  5. Pan — click and drag to scroll the map (VB-72)                  */
+    /*  5. Pan — klik en sleep om de kaart te verschuiven                  */
     /* ================================================================== */
     (function setupPan() {
         const $container = $wrapper.find( '.vb-canvas-container' );
@@ -170,7 +173,7 @@
             $canvas.removeClass( 'vb-is-panning' );
         } );
 
-        // Touch support (mobile)
+        // Touch ondersteuning (mobiel)
         $container.on( 'touchstart', function ( e ) {
             if ( e.touches.length !== 1 ) return;
             const t    = e.touches[0];
@@ -192,12 +195,12 @@
     }());
 
     /* ================================================================== */
-    /*  6. Booking modal                                                   */
+    /*  6. Boekingsmodal                                                   */
     /* ================================================================== */
     $wrapper.on('click', '.vb-open-booking-form', function () {
         if (selected.length === 0) return;
 
-        // Build summary
+        // Samenvatting opbouwen
         const $summary = $modal.find('.vb-selected-summary').empty();
         let total = 0;
 
@@ -222,13 +225,13 @@
         $modal.show();
     });
 
-    // Close modal
+    // Modal sluiten
     $wrapper.on('click', '.vb-modal-close, .vb-modal-close-btn, .vb-modal-overlay', function () {
         $modal.hide();
     });
 
     /* ================================================================== */
-    /*  7. Form submission                                                 */
+    /*  7. Formulier versturen                                             */
     /* ================================================================== */
     $form.on('submit', function (e) {
         e.preventDefault();

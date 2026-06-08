@@ -1,8 +1,8 @@
 /**
- * Visual Booker – Admin Map Builder
+ * Visual Booker – Admin Kaart Builder
  *
- * Handles: image picker, spot placement, drag/resize, spot editing,
- *          bulk save via REST API, and booking status management.
+ * Verantwoordelijk voor: afbeelding kiezen, spot plaatsen, slepen/verkleinen,
+ *          spot bewerken, bulk opslaan via REST API en boekingsstatus beheren.
  */
 (function ($) {
     'use strict';
@@ -12,13 +12,13 @@
     const $canvas = $('#vb-canvas');
     const layoutId = $canvas.data('layout-id');
 
-    let spots = [];          // local state
+    let spots = [];          // lokale staat
     let selectedSpotId = null;
     let isDragging = false;
     let gridSize = 5; // raster grootte in procenten
 
     /* ================================================================== */
-    /*  1. Image Picker (WP Media)                                         */
+    /*  1. Afbeelding kiezen (WP Media)                                    */
     /* ================================================================== */
     $('#vb-pick-image').on('click', function (e) {
         e.preventDefault();
@@ -33,7 +33,7 @@
             $('#vb-layout-image').val(attachment.url);
             $('#vb-layout-image-id').val(attachment.id);
 
-            // Replace canvas content
+            // Canvas inhoud vervangen
             $canvas.find('#vb-bg-image, #vb-placeholder').remove();
             $canvas.prepend(
                 $('<img>', {
@@ -58,7 +58,7 @@
     });
 
     /* ================================================================== */
-    /*  2. Load existing spots                                             */
+    /*  2. Bestaande spots laden                                           */
     /* ================================================================== */
     function loadSpots() {
         if (!layoutId) return;
@@ -66,11 +66,13 @@
         $.getJSON(API + 'spots/' + layoutId, function (data) {
             spots = data;
             renderAllSpots();
+        }).fail(function () {
+            showStatus('Error loading spots ✗');
         });
     }
 
     /* ================================================================== */
-    /*  3. Render spots on canvas                                          */
+    /*  3. Spots tekenen op canvas                                         */
     /* ================================================================== */
     function renderAllSpots() {
         $canvas.find('.vb-spot').remove();
@@ -80,9 +82,11 @@
     }
 
     function renderSpot(spot) {
+        const isBooked   = spot.booked;
         const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
+        const bookedClass = isBooked ? ' vb-spot--booked' : '';
         const $spot = $('<div>', {
-            class: 'vb-spot' + shapeClass,
+            class: 'vb-spot' + shapeClass + bookedClass,
             'data-id': spot.id,
         })
             .css({
@@ -90,29 +94,29 @@
                 top: spot.pos_y + '%',
                 width: spot.width + '%',
                 height: spot.height + '%',
-                backgroundColor: spot.color || '#4CAF50',
+                backgroundColor: isBooked ? undefined : (spot.color || '#4CAF50'),
             })
             .append($('<span>', { class: 'vb-spot-label', text: spot.label || '' }))
             .append($('<div>', { class: 'vb-resize-handle' }));
 
-        // Click to select
+        // Klik om te selecteren
         $spot.on('click', function (e) {
             if (isDragging) return;
             e.stopPropagation();
             selectSpot(spot.id);
         });
 
-        // Make draggable
+        // Versleepbaar maken
         makeDraggable($spot, spot);
 
-        // Make resizable via handle
+        // Verkleinen via de handle
         makeResizable($spot, spot);
 
         $canvas.append($spot);
     }
 
     /* ================================================================== */
-    /*  4. Dragging                                                        */
+    /*  4. Slepen                                                          */
     /* ================================================================== */
     function makeDraggable($el, spot) {
         let startX, startY, startLeft, startTop;
@@ -151,7 +155,7 @@
 
             function onUp() {
                 $(document).off('mousemove', onMove).off('mouseup', onUp);
-                // Delay resetting isDragging so the click handler can check it
+                // Kort wachten zodat de klik handler nog kan checken of er gesleept werd
                 setTimeout(function () { isDragging = false; }, 50);
             }
 
@@ -160,7 +164,7 @@
     }
 
     /* ================================================================== */
-    /*  5. Resizing (via bottom-right handle)                              */
+    /*  5. Formaat aanpassen (via rechtsonder handle)                      */
     /* ================================================================== */
     function makeResizable($el, spot) {
         $el.find('.vb-resize-handle').on('mousedown', function (e) {
@@ -194,18 +198,18 @@
     }
 
     /* ================================================================== */
-    /*  6. Select / edit spot                                              */
+    /*  6. Spot selecteren en bewerken                                     */
     /* ================================================================== */
     function selectSpot(id) {
         selectedSpotId = id;
         const spot = spots.find(s => s.id == id);
         if (!spot) return;
 
-        // Highlight
+        // Markeren
         $canvas.find('.vb-spot').removeClass('vb-spot--selected');
         $canvas.find('.vb-spot[data-id="' + id + '"]').addClass('vb-spot--selected');
 
-        // Populate editor
+        // Editor invullen
         $('#vb-spot-label').val(spot.label);
         $('#vb-spot-type').val(spot.spot_type_id || 1);
         $('#vb-spot-price').val(spot.price || 0);
@@ -214,14 +218,14 @@
         $('#vb-spot-editor').slideDown(200);
     }
 
-    // Deselect on canvas click
+    // Deselecteren bij klik op canvas
     $canvas.on('click', function () {
         selectedSpotId = null;
         $canvas.find('.vb-spot').removeClass('vb-spot--selected');
         $('#vb-spot-editor').slideUp(200);
     });
 
-    // Update spot properties
+    // Spot eigenschappen bijwerken
     $('#vb-spot-update').on('click', function () {
         if (!selectedSpotId) return;
         const spot = spots.find(s => s.id == selectedSpotId);
@@ -233,17 +237,17 @@
         spot.color        = $('#vb-spot-color').val();
         spot.status_id    = parseInt($('#vb-spot-status').val());
 
-        // Re-render this spot
+        // Spot opnieuw tekenen
         const $el = $canvas.find('.vb-spot[data-id="' + spot.id + '"]');
         $el.css('backgroundColor', spot.color);
         $el.find('.vb-spot-label').text(spot.label);
         $el.toggleClass('vb-spot--circle', spot.shape === 'circle');
 
-        // Auto-save this spot
+        // Spot automatisch opslaan
         saveSpot(spot);
     });
 
-    // Delete spot
+    // Spot verwijderen
     $('#vb-spot-delete').on('click', function () {
         if (!selectedSpotId) return;
         if (!confirm('Delete this spot?')) return;
@@ -260,11 +264,14 @@
                 selectedSpotId = null;
                 $('#vb-spot-editor').slideUp(200);
             },
+            error: function () {
+                showStatus('Error deleting spot ✗');
+            },
         });
     });
 
     /* ================================================================== */
-    /*  7. Add new spot                                                    */
+    /*  7. Nieuwe spot toevoegen                                           */
     /* ================================================================== */
     $('#vb-add-spot').on('click', function () {
         if (!$canvas.find('#vb-bg-image').length) {
@@ -292,7 +299,7 @@
             shape: shape,
         };
 
-        // Save to DB first
+        // Eerst opslaan in de database
         $.ajax({
             url: API + 'spot',
             method: 'POST',
@@ -308,11 +315,14 @@
                 selectSpot(newSpot.id);
                 showStatus('Spot added ✓');
             },
+            error: function () {
+                showStatus('Error adding spot ✗');
+            },
         });
     });
 
     /* ================================================================== */
-    /*  8. Save single / bulk                                              */
+    /*  8. Opslaan enkel / bulk                                            */
     /* ================================================================== */
     function saveSpot(spot) {
         $.ajax({
@@ -325,6 +335,9 @@
             },
             success: function () {
                 showStatus('Saved ✓');
+            },
+            error: function () {
+                showStatus('Error saving spot ✗');
             },
         });
     }
@@ -356,7 +369,7 @@
     }
 
     /* ================================================================== */
-    /*  9. Booking actions (approve / cancel)                              */
+    /*  9. Boekingsacties (goedkeuren / annuleren)                         */
     /* ================================================================== */
     $(document).on('click', '.vb-booking-action', function () {
         const $btn      = $(this);
@@ -378,7 +391,7 @@
                     .addClass('vb-status--' + action)
                     .text(action.charAt(0).toUpperCase() + action.slice(1));
 
-                // Update action buttons
+                // Actieknoppen bijwerken
                 const $td = $btn.closest('td');
                 $td.empty();
                 if (action === 'approved') {
@@ -398,17 +411,26 @@
                     }, 1500);
                 }
             },
+            error: function () {
+                showStatus('Error updating booking ✗');
+            },
         });
     });
 
     $('#vb-toggle-grid').on('click', function () {
         $canvas.toggleClass('vb-grid-active');
         $(this).toggleClass('vb-grid-is-active');
+        $('#vb-grid-size').toggle($canvas.hasClass('vb-grid-active'));
     });
     
     $('#vb-grid-size').on('change', function () {
         gridSize = parseInt($(this).val());
         $canvas.css('--grid-size', gridSize + '%');
+    });
+
+    $('#vb-toggle-max-spots').on('click', function () {
+        $(this).toggleClass('vb-grid-is-active');
+        $('#vb-max-spots-per-booking').toggle($(this).hasClass('vb-grid-is-active'));
     });
 
     /* ================================================================== */

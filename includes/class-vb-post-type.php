@@ -1,6 +1,6 @@
 <?php
 /**
- * Register the "Layout" custom post type + meta boxes.
+ * Registreert het "Layout" custom post type en meta boxes.
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -36,7 +36,7 @@ class VB_Post_Type {
     /* ------------------------------------------------------------------ */
 
     public static function add_meta_boxes() {
-        // 1. Map Builder
+        // 1. Kaart builder
         add_meta_box(
             'vb_map_builder',
             __( 'Map / Image Builder', 'visual-booker' ),
@@ -46,7 +46,7 @@ class VB_Post_Type {
             'high'
         );
 
-        // 2. Shortcode helper
+        // 2. Shortcode weergave
         add_meta_box(
             'vb_shortcode_info',
             __( 'Shortcode', 'visual-booker' ),
@@ -56,7 +56,7 @@ class VB_Post_Type {
             'default'
         );
 
-        // 3. Bookings list
+        // 3. Boekingen lijst
         add_meta_box(
             'vb_bookings_list',
             __( 'Bookings', 'visual-booker' ),
@@ -67,7 +67,7 @@ class VB_Post_Type {
         );
     }
 
-    /* ---------- Builder ---------- */
+    /* ---------- Kaart builder ---------- */
     public static function render_builder_meta_box( $post ) {
         wp_nonce_field( 'vb_save_layout', 'vb_layout_nonce' );
         $image_url = get_post_meta( $post->ID, '_vb_layout_image', true );
@@ -75,7 +75,7 @@ class VB_Post_Type {
         ?>
         <div id="vb-builder-wrap">
 
-            <!-- Image picker -->
+            <!-- Afbeelding kiezen -->
                 <div id="vb-image-picker" style="margin-bottom:12px;">
                     <button type="button" class="button" id="vb-pick-image">
                         <?php esc_html_e( 'Choose Background Image / Map', 'visual-booker' ); ?>
@@ -87,7 +87,7 @@ class VB_Post_Type {
                     <input type="hidden" name="vb_layout_image_id" id="vb-layout-image-id" value="<?php echo esc_attr( $image_id ); ?>" />
                 </div>
 
-                <!-- Toolbar row -->
+                <!-- Werkbalk -->
                 <div id="vb-toolbar-row">
                     <div id="vb-toolbar">
                         <button type="button" class="button button-primary" id="vb-add-spot">
@@ -103,17 +103,23 @@ class VB_Post_Type {
                         <button type="button" class="button" id="vb-toggle-grid">
                             🔲 <?php esc_html_e( 'Toggle Grid', 'visual-booker' ); ?>
                         </button>
+                        <button type="button" class="button" id="vb-toggle-max-spots">
+                            🎯 <?php esc_html_e( 'Max spots per boeking', 'visual-booker' ); ?>
+                        </button>
                         <span id="vb-save-status"></span>
                     </div>
-                    <select id="vb-grid-size">
+                    <select id="vb-grid-size" style="display:none;">
                         <option value="1">1%</option>
                         <option value="2">2%</option>
                         <option value="5" selected>5%</option>
                         <option value="10">10%</option>
                     </select>
+                    <input type="number" id="vb-max-spots-per-booking" name="vb_max_spots_per_booking" min="1" style="width:70px; display:none;"
+                        title="<?php esc_attr_e( 'Max spots per boeking', 'visual-booker' ); ?>"
+                        value="<?php echo esc_attr( get_post_meta( $post->ID, '_vb_max_spots_per_booking', true ) ?: 10 ); ?>" />
                 </div>
 
-                <!-- The canvas / builder area -->
+                <!-- Canvas / bouwgebied -->
                 <div id="vb-canvas-wrap">
                     <div id="vb-canvas" data-layout-id="<?php echo esc_attr( $post->ID ); ?>">
                         <?php if ( $image_url ) : ?>
@@ -123,11 +129,11 @@ class VB_Post_Type {
                                 <p><?php esc_html_e( '← Choose a background image to start placing spots.', 'visual-booker' ); ?></p>
                             </div>
                         <?php endif; ?>
-                        <!-- Spots are rendered here by JS -->
+                        <!-- Spots worden hier door JS gerenderd -->
                     </div>
                 </div>
 
-                <!-- Spot editor panel (appears when a spot is selected) -->
+                <!-- Spot editor paneel -->
                 <div id="vb-spot-editor" style="display:none;">
                     <h4><?php esc_html_e( 'Edit Spot', 'visual-booker' ); ?></h4>
                     <table class="form-table">
@@ -178,7 +184,7 @@ class VB_Post_Type {
         <?php
     }
 
-    /* ---------- Shortcode info ---------- */
+    /* ---------- Shortcode weergave ---------- */
     public static function render_shortcode_meta_box( $post ) {
         if ( $post->post_status === 'auto-draft' ) {
             echo '<p>' . esc_html__( 'Save the layout first to get a shortcode.', 'visual-booker' ) . '</p>';
@@ -189,7 +195,7 @@ class VB_Post_Type {
         echo '<p class="description">' . esc_html__( 'Paste this shortcode into any page or post.', 'visual-booker' ) . '</p>';
     }
 
-    /* ---------- Bookings list ---------- */
+    /* ---------- Boekingen ---------- */
     public static function render_bookings_meta_box( $post ) {
         if ( $post->post_status === 'auto-draft' ) {
             echo '<p>' . esc_html__( 'Save the layout first.', 'visual-booker' ) . '</p>';
@@ -239,7 +245,7 @@ class VB_Post_Type {
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Save meta                                                          */
+    /*  Meta opslaan                                                       */
     /* ------------------------------------------------------------------ */
 
     public static function save_meta( $post_id, $post ) {
@@ -254,6 +260,9 @@ class VB_Post_Type {
         }
         if ( isset( $_POST['vb_layout_image_id'] ) ) {
             update_post_meta( $post_id, '_vb_layout_image_id', absint( $_POST['vb_layout_image_id'] ) );
+        }
+        if ( isset( $_POST['vb_max_spots_per_booking'] ) ) {
+            update_post_meta( $post_id, '_vb_max_spots_per_booking', absint( $_POST['vb_max_spots_per_booking'] ) ?: 10 );
         }
 
     }

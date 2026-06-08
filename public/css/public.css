@@ -145,7 +145,7 @@
     border-radius: 50%;
 }
 
-.vb-spot-public:hover:not(.vb-spot--booked):not(.vb-spot--locked) {
+.vb-spot-public:hover:not(.vb-spot--booked):not(.vb-spot--unavailable) {
     transform: scale(1.1);
     z-index: 20;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -168,7 +168,7 @@
     z-index: 30;
 }
 
-.vb-spot-public.vb-spot--locked {
+.vb-spot-public.vb-spot--unavailable {
     background-color: #9E9E9E !important;
     cursor: not-allowed;
     opacity: 0.5;

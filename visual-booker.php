@@ -15,16 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Constants                                                          */
+/*  Constanten                                                         */
 /* ------------------------------------------------------------------ */
 define( 'VB_VERSION', '1.0.2' );
-define( 'VB_DB_VERSION', '1.0.0' );
+define( 'VB_DB_VERSION', '61834' );
 define( 'VB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'VB_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
 /* ------------------------------------------------------------------ */
-/*  Autoload includes                                                  */
+/*  Includes laden                                                     */
 /* ------------------------------------------------------------------ */
 require_once VB_PLUGIN_DIR . 'includes/class-vb-db.php';
 require_once VB_PLUGIN_DIR . 'includes/class-vb-post-type.php';
@@ -32,7 +32,7 @@ require_once VB_PLUGIN_DIR . 'includes/class-vb-rest-api.php';
 require_once VB_PLUGIN_DIR . 'includes/class-vb-shortcode.php';
 
 /* ------------------------------------------------------------------ */
-/*  Activation / Deactivation                                          */
+/*  Activatie                                                          */
 /* ------------------------------------------------------------------ */
 register_activation_hook( __FILE__, array( 'VB_DB', 'create_tables' ) );
 
@@ -47,7 +47,7 @@ add_action( 'wp_enqueue_scripts', 'vb_public_assets' );
 add_action('admin_menu', 'vb_settings_menu');
 
 /* ------------------------------------------------------------------ */
-/*  Admin assets                                                       */
+/*  Admin bestanden                                                    */
 /* ------------------------------------------------------------------ */
 function vb_admin_assets( $hook ) {
     $screen = get_current_screen();
@@ -57,7 +57,7 @@ function vb_admin_assets( $hook ) {
 
     $ver = WP_DEBUG ? null : VB_VERSION;
 
-    wp_enqueue_media(); // WP media uploader
+    wp_enqueue_media(); // WordPress media uploader
 
     wp_enqueue_style(
         'vb-admin-css',
@@ -83,10 +83,10 @@ function vb_admin_assets( $hook ) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Public assets                                                      */
+/*  Publieke bestanden                                                 */
 /* ------------------------------------------------------------------ */
 function vb_public_assets() {
-    // Only load when shortcode is present (also enqueued in shortcode render)
+    // Alleen laden als shortcode aanwezig is
     error_log('1. vb_public_assets: ' . time());
     $ver = WP_DEBUG ? null : VB_VERSION;
 
