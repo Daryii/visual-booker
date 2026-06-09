@@ -71,7 +71,7 @@ CREATE TABLE {$bookings} (
     id                 BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT,
     spot_id            BIGINT UNSIGNED  NOT NULL,
     layout_id          BIGINT UNSIGNED  NOT NULL,
-    customer_name      VARCHAR(200)     NOT NULL DEFAULT '',
+    customer_name      VARCHAR(255)     NOT NULL DEFAULT '',
     customer_email     VARCHAR(200)     NOT NULL DEFAULT '',
     customer_phone     VARCHAR(50)      NOT NULL DEFAULT '',
     booking_status_id  TINYINT UNSIGNED NOT NULL DEFAULT 1,

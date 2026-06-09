@@ -222,6 +222,7 @@
             )
         );
 
+        $form.find('.vb-form-message').hide();
         $modal.show();
     });
 

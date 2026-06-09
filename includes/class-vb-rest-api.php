@@ -125,6 +125,11 @@ class VB_REST_API {
         return new WP_Error('invalid_value', 'Prijs mag niet negatief zijn.', array('status' => 400));
        }
 
+       // HTML tags blokkeren in label
+       if ( $data['label'] !== wp_strip_all_tags( $data['label'] ) ) {
+           return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in het label.', array( 'status' => 400 ) );
+       }
+
        // Data sanitizen
        $data['label'] = sanitize_text_field($data['label']);
        $data['layout_id'] = absint($data['layout_id']);
@@ -174,6 +179,12 @@ class VB_REST_API {
                 continue;
             }
             
+            // HTML tags blokkeren in label
+            if ( $s['label'] !== wp_strip_all_tags( $s['label'] ) ) {
+                $errors[] = sprintf( 'Spot %d: HTML tags zijn niet toegestaan in het label.', $index + 1 );
+                continue;
+            }
+
             // Data sanitizen
             $s['label'] = sanitize_text_field( $s['label'] );
             $s['layout_id'] = absint( $s['layout_id'] );
@@ -222,8 +233,8 @@ class VB_REST_API {
 
         // Naam lengte valideren
         $customer_name_length = mb_strlen( trim( $data['customer_name'] ) );
-        if ( $customer_name_length < 2 || $customer_name_length > 200 ) {
-            return new WP_Error( 'invalid_name', 'Naam moet tussen 2 en 200 tekens zijn.', array( 'status' => 400 ) );
+        if ( $customer_name_length < 2 || $customer_name_length > 255 ) {
+            return new WP_Error( 'invalid_name', 'Naam moet tussen 2 en 255 tekens zijn.', array( 'status' => 400 ) );
         }
 
         // E-mailadres valideren
@@ -247,6 +258,15 @@ class VB_REST_API {
         $booked = VB_DB::get_booked_spot_ids( (int) $data['layout_id'] );
         if ( in_array( (string) $data['spot_id'], $booked, true ) ) {
             return new WP_Error( 'already_booked', 'This spot is already booked.', array( 'status' => 409 ) );
+        }
+
+        // HTML tags blokkeren in naam en notities
+        if ( $data['customer_name'] !== wp_strip_all_tags( $data['customer_name'] ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de naam.', array( 'status' => 400 ) );
+        }
+        $notes_raw = $data['notes'] ?? '';
+        if ( $notes_raw !== wp_strip_all_tags( $notes_raw ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de notities.', array( 'status' => 400 ) );
         }
 
         $booking_data = array(
@@ -297,14 +317,23 @@ class VB_REST_API {
         $layout_id      = absint( $data['layout_id'] );
         $customer_name  = sanitize_text_field( $data['customer_name'] );
         $customer_name_length = mb_strlen( trim( $customer_name ) );
-        if ( $customer_name_length < 2 || $customer_name_length > 200 ) {
-            return new WP_Error( 'invalid_name', 'Naam moet tussen 2 en 200 tekens zijn.', array( 'status' => 400 ) );
+        if ( $customer_name_length < 2 || $customer_name_length > 255 ) {
+            return new WP_Error( 'invalid_name', 'Naam moet tussen 2 en 255 tekens zijn.', array( 'status' => 400 ) );
         }
 
         $customer_email = sanitize_email( $data['customer_email'] );
         if ( ! is_email( $customer_email ) ) {
             return new WP_Error( 'invalid_email', 'Ongeldig e-mailadres.', array( 'status' => 400 ) );
         }
+        // HTML tags blokkeren in naam en notities
+        if ( $data['customer_name'] !== wp_strip_all_tags( $data['customer_name'] ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de naam.', array( 'status' => 400 ) );
+        }
+        $notes_raw = $data['notes'] ?? '';
+        if ( $notes_raw !== wp_strip_all_tags( $notes_raw ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de notities.', array( 'status' => 400 ) );
+        }
+
         $customer_phone = sanitize_text_field( $data['customer_phone'] ?? '' );
         $notes          = sanitize_textarea_field( $data['notes'] ?? '' );
 
