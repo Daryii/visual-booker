@@ -108,7 +108,10 @@
             $el.removeClass('vb-spot--selected').addClass('vb-spot--open');
         } else {
             // Blokkeer selectie als max bereikt is
-            if (selected.length >= maxSpotsPerBooking) return;
+            if (selected.length >= maxSpotsPerBooking) {
+                alert('Je kunt maximaal ' + maxSpotsPerBooking + ' spots selecteren.');
+                return;
+            }
             selected.push(spot);
             $el.removeClass('vb-spot--open').addClass('vb-spot--selected');
         }
