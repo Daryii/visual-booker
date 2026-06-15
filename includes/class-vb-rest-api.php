@@ -54,7 +54,7 @@ class VB_REST_API {
             'permission_callback' => '__return_true',
         ) );
 
-        // POST meerdere boekingen tegelijk aanmaken (VB-98)
+        // POST meerdere boekingen tegelijk aanmaken
         register_rest_route( $ns, '/bookings/bulk', array(
             'methods'             => 'POST',
             'callback'            => array( __CLASS__, 'create_bookings_bulk' ),

@@ -68,7 +68,7 @@
     cursor: grabbing;
 }
 
-/* Zoom controls (VB-72) */
+/* Zoom controls */
 .vb-zoom-bar {
     display: flex;
     align-items: center;

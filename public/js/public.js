@@ -54,7 +54,7 @@
             else if (isUnavailable) stateClass = 'vb-spot--unavailable';
 
             const priceText = parseFloat(spot.price) > 0
-                ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString('nl-NL')
+                ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString(vbPublic.currencyLocale)
                 : '';
 
             const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
@@ -130,7 +130,7 @@
         }, 0);
 
         $selectionBar.find('.vb-selected-count').text(selected.length);
-        $selectionBar.find('.vb-selected-total').text( currencySymbol + total.toLocaleString('nl-NL'));
+        $selectionBar.find('.vb-selected-total').text( currencySymbol + total.toLocaleString(vbPublic.currencyLocale));
         $selectionBar.slideDown(200);
     }
 
@@ -213,7 +213,7 @@
             $summary.append(
                 $('<div>', { class: 'vb-summary-row' }).append(
                     $('<span>').text(s.label || 'Spot #' + s.id),
-                    $('<span>').text(currencySymbol + price.toLocaleString('nl-NL'))
+                    $('<span>').text(currencySymbol + price.toLocaleString(vbPublic.currencyLocale))
                 )
             );
         });
@@ -221,7 +221,7 @@
         $summary.append(
             $('<div>', { class: 'vb-summary-row' }).append(
                 $('<span>').text('Total'),
-                $('<span>').text(currencySymbol + total.toLocaleString('nl-NL'))
+                $('<span>').text(currencySymbol + total.toLocaleString(vbPublic.currencyLocale))
             )
         );
 
@@ -240,7 +240,7 @@
     $form.on('submit', function (e) {
         e.preventDefault();
 
-        const $msg = $form.find('.vb-form-message').hide();
+        $form.find('.vb-form-message').hide();
         const $btn = $form.find('button[type="submit"]').prop('disabled', true).text('Booking…');
 
         const customerName  = $form.find('[name="customer_name"]').val().trim();
@@ -254,7 +254,7 @@
             return;
         }
 
-        // Stuur alle spots in één API call (VB-99)
+        // Stuur alle spots in één API call
         $.ajax({
             url: API + 'bookings/bulk',
             method: 'POST',
