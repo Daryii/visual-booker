@@ -26,13 +26,12 @@ fetch('/wp-json/visual-booker/v1/bookings/bulk', {
 
 **Verwachting:**
 - De request wordt geweigerd met status 403.
-- De foutmelding bevat "Invalid request" of vergelijkbaar.
+- De foutmelding bevat "Invalid nonce" of missing nonce.
 - Er wordt geen boeking aangemaakt.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd
 
-**Opmerking:**
-
+**Opmerking:** De request wordt geweigerd met statuscode 403. De foutmelding geeft aan dat de nonce ongeldig of ontbrekend is en er wordt geen boeking aangemaakt.
 ---
 
 ## Test 6.2 – Booking request met geldige nonce (via frontend)
@@ -45,6 +44,6 @@ fetch('/wp-json/visual-booker/v1/bookings/bulk', {
 - De boeking wordt succesvol aangemaakt.
 - De `X-WP-Nonce` header is zichtbaar in het Network tabje.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De boeking is succesvol aangemaakt en de `X-WP-Nonce` header is zichtbaar in het Network tabje.

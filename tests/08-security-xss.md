@@ -8,18 +8,25 @@
 
 **Actie:**
 - Ga naar de admin builder.
-- Maak een spot aan met het label: `<script>alert('XSS')</script>`
+- Maak een nieuwe spot aan.
+- Bewerk het label van de spot naar: `<script>alert('XSS')</script>`
 - Sla de spot op.
 - Open de frontend boekingspagina.
 
 **Verwachting:**
-- Er verschijnt GEEN alert popup.
-- De API geeft een foutmelding terug: HTML tags zijn niet toegestaan.
-- In de HTML broncode is het label ge-escaped.
+- De API geeft een foutmelding terug: "HTML tags zijn niet toegestaan in het label."
+- De spot wordt niet opgeslagen in de database.
+- Er verschijnt GEEN alert popup op de frontend.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De API geeft een foutmelding terug met:
+    "code": "invalid_field",
+    "message": "HTML tags zijn niet toegestaan in het label.",
+    "data": {
+        "status": 400
+    }
+De spot wordt niet opgeslagen en er verschijnt geen popup op de frontend.
 
 ---
 
@@ -30,12 +37,22 @@
 - Selecteer een spot en klik op "Book Now".
 - Vul als naam in: `<img src=x onerror=alert('XSS')>`
 - Vul een geldig e-mailadres in en klik op "Confirm Booking".
-- Ga naar de admin en bekijk de boeking.
 
 **Verwachting:**
-- Er verschijnt GEEN alert popup, niet op de frontend en niet in de admin.
-- De API geeft een foutmelding terug: HTML tags zijn niet toegestaan.
+- De API geeft een foutmelding terug (HTTP 400): "HTML tags zijn niet toegestaan in de naam."
+- De foutmelding is zichtbaar in het formulier als rode melding.
+- De boeking wordt niet opgeslagen in de database.
+- Er verschijnt GEEN alert popup op de frontend.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Mislukt 
 
-**Opmerking:**
+**Opmerking:** De test is gelukt maar met een andere foutmelding dan verwacht. In plaats van "HTML tags zijn niet toegestaan" werd de volgende melding teruggegeven:
+{
+    "code": "invalid_name",
+    "message": "Naam moet tussen 2 en 255 tekens zijn.",
+    "data": {
+        "status": 400
+    }
+}
+
+

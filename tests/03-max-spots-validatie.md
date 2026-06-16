@@ -8,15 +8,15 @@
 
 **Actie:**
 - Open de frontend boekingspagina.
-- Probeer meer dan 10 spots te selecteren (het ingestelde maximum).
+- Probeer meer dan het ingestelde maximum te selecteren.
 
 **Verwachting:**
-- Na 10 spots wordt verdere selectie geblokkeerd.
+- Na ingestelde maximum spots wordt selectie geblokkeerd.
 - Er verschijnt een melding dat het maximum is bereikt.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** Het formulier werd niet verstuurd. De browser toonde de melding " Je kunt maximaal {igestelde max} spots selecteren" 
 
 ---
 
@@ -24,13 +24,13 @@
 
 **Actie:**
 - Open de frontend boekingspagina.
-- Selecteer precies 10 spots.
+- Selecteer het ingestelde maximum.
 - Vul geldige gegevens in en klik op "Confirm Booking".
 
 **Verwachting:**
-- Alle 10 spots worden succesvol geboekt.
-- De bevestigingsmail bevat alle 10 spots met de juiste totaalprijs.
+- Alle spots worden succesvol geboekt.
+- De bevestigingsmail bevat alle spots met de juiste totaalprijs.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** Het formulier werd verstuurd. In het formulier verscheen de melding "🎉 Boeking bevestigd! Je ontvangt een bevestigingsmail, en de bevestigingmail bevat alle geselecterde spots.

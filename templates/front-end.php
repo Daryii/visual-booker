@@ -12,10 +12,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <div class="vb-header">
         <h3 class="vb-title"><?php echo esc_html( $layout->post_title ); ?></h3>
         <div class="vb-legend">
-            <span class="vb-legend-item"><span class="vb-dot vb-dot--open"></span> Available</span>
-            <span class="vb-legend-item"><span class="vb-dot vb-dot--booked"></span> Booked</span>
-            <span class="vb-legend-item"><span class="vb-dot vb-dot--selected"></span> Selected</span>
-            <span class="vb-legend-item"><span class="vb-dot vb-dot--locked"></span> Unavailable</span>
+            <span class="vb-legend-item"><span class="vb-dot vb-dot--open"></span> Beschikbaar</span>
+            <span class="vb-legend-item"><span class="vb-dot vb-dot--booked"></span> Geboekt</span>
+            <span class="vb-legend-item"><span class="vb-dot vb-dot--selected"></span> Geselecteerd</span>
+            <span class="vb-legend-item"><span class="vb-dot vb-dot--locked"></span> Niet beschikbaar</span>
         </div>
     </div>
 
@@ -40,14 +40,14 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     <!-- Selection info bar -->
     <div class="vb-selection-bar" id="vb-selection-bar-<?php echo esc_attr( $layout_id ); ?>" style="display:none;">
         <div class="vb-selection-info">
-            <strong>Selected:</strong>
+            <strong>Geselecteerd:</strong>
             <span class="vb-selected-count">0</span> spot(s)
             &nbsp;|&nbsp;
-            <strong>Total:</strong>
+            <strong>Totaal:</strong>
             <span class="vb-selected-total">0</span>
         </div>
         <button type="button" class="vb-btn vb-btn-primary vb-open-booking-form">
-            Book Now →
+            Boek nu →
         </button>
     </div>
 
@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
         <div class="vb-modal-overlay"></div>
         <div class="vb-modal-content">
             <button type="button" class="vb-modal-close">&times;</button>
-            <h3>Complete Your Booking</h3>
+            <h3>Boeking afronden</h3>
 
             <div class="vb-selected-summary">
                 <!-- Filled by JS -->
@@ -64,25 +64,25 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
             <form class="vb-booking-form" id="vb-form-<?php echo esc_attr( $layout_id ); ?>">
                 <div class="vb-form-group">
-                    <label for="vb-name-<?php echo esc_attr( $layout_id ); ?>">Full Name <span class="required">*</span></label>
+                    <label for="vb-name-<?php echo esc_attr( $layout_id ); ?>">Volledige naam <span class="required">*</span></label>
                     <input type="text" id="vb-name-<?php echo esc_attr( $layout_id ); ?>" name="customer_name" required />
                 </div>
                 <div class="vb-form-group">
-                    <label for="vb-email-<?php echo esc_attr( $layout_id ); ?>">Email <span class="required">*</span></label>
+                    <label for="vb-email-<?php echo esc_attr( $layout_id ); ?>">E-mailadres <span class="required">*</span></label>
                     <input type="email" id="vb-email-<?php echo esc_attr( $layout_id ); ?>" name="customer_email" required />
                 </div>
                 <div class="vb-form-group">
-                    <label for="vb-phone-<?php echo esc_attr( $layout_id ); ?>">Phone</label>
+                    <label for="vb-phone-<?php echo esc_attr( $layout_id ); ?>">Telefoonnummer</label>
                     <input type="tel" id="vb-phone-<?php echo esc_attr( $layout_id ); ?>" name="customer_phone" />
                 </div>
                 <div class="vb-form-group">
-                    <label for="vb-notes-<?php echo esc_attr( $layout_id ); ?>">Notes</label>
+                    <label for="vb-notes-<?php echo esc_attr( $layout_id ); ?>">Opmerkingen</label>
                     <textarea id="vb-notes-<?php echo esc_attr( $layout_id ); ?>" name="notes" rows="3"></textarea>
                 </div>
 
                 <div class="vb-form-actions">
-                    <button type="submit" class="vb-btn vb-btn-primary">Confirm Booking</button>
-                    <button type="button" class="vb-btn vb-modal-close-btn">Cancel</button>
+                    <button type="submit" class="vb-btn vb-btn-primary">Boeking bevestigen</button>
+                    <button type="button" class="vb-btn vb-modal-close-btn">Annuleren</button>
                 </div>
 
                 <div class="vb-form-message" style="display:none;"></div>

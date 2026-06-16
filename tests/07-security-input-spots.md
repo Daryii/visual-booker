@@ -30,9 +30,9 @@ fetch(vbAdmin.restUrl + 'spot', {
 - De REST API geeft een foutmelding terug: veld "label" is verplicht.
 - Er wordt geen spot aangemaakt in de database.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De REST API geeft een foutmelding terug met POST 400 (anonymous) Bad Request. De melding geeft aan dat het veld "label" verplicht is en er wordt geen spot aangemaakt in de database.
 
 ---
 
@@ -61,9 +61,9 @@ fetch(vbAdmin.restUrl + 'spot', {
 - De REST API geeft een foutmelding terug: pos_x moet tussen 0 en 100 zijn.
 - Er wordt geen spot aangemaakt.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De REST API geeft een foutmelding terug met POST 400 (anonymous) Bad Request. De melding geeft aan dat pos_x tussen 0 en 100 moet zijn en er wordt geen spot aangemaakt in de database.
 
 ---
 
@@ -93,6 +93,6 @@ fetch(vbAdmin.restUrl + 'spot', {
 - De REST API geeft een foutmelding terug: prijs mag niet negatief zijn.
 - Er wordt geen spot aangemaakt.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De REST API geeft een foutmelding terug met POST 400 (anonymous) Bad Request. De melding geeft aan dat 'Prijs mag niet negatief zijn' en er wordt geen spot aangemaakt in de database.

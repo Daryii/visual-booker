@@ -19,9 +19,9 @@
 - Er wordt geen boeking aangemaakt in de database.
 - Er wordt geen e-mail verstuurd.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** Het formulier werd niet verstuurd. De browser toonde de melding "Vul dit veld in" direct onder het emailveld. Er werd geen boeking aangemaakt in de database.
 
 ---
 
@@ -38,6 +38,6 @@
 - De klant ontvangt een bevestigingsmail op test@test.nl.
 - De admin ontvangt een notificatiemail.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De boeking werd succesvol aangemaakt. In het formulier verscheen de melding "🎉 Boeking bevestigd! Je ontvangt een bevestigingsmail." De klant ontving een bevestigingsmail en de admin een notificatiemail.

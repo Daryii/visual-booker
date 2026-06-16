@@ -436,8 +436,10 @@ class VB_REST_API {
         $admin_email  = get_option( 'admin_email' );
 
         // Haal alle geboekte spots op
-        $spots_text = '';
-        $total      = 0.0;
+        $currency        = get_option( 'vb_currency_symbol', '€' );
+        $spots_rows_html = '';
+        $total           = 0.0;
+
         foreach ( $booking_ids as $booking_id ) {
             $row = $wpdb->get_row( $wpdb->prepare(
                 "SELECT s.label, s.price FROM " . VB_DB::spots_table() . " s
@@ -446,32 +448,34 @@ class VB_REST_API {
                 $booking_id
             ) );
             if ( $row ) {
-                $total       += (float) $row->price;
-                $spots_text  .= sprintf( "  - %s (€%s)\n", $row->label, number_format( (float) $row->price, 2, ',', '.' ) );
+                $total           += (float) $row->price;
+                $spots_rows_html .= sprintf(
+                    '<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">%s</td><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;">%s%s</td></tr>',
+                    esc_html( $row->label ),
+                    esc_html( $currency ),
+                    number_format( (float) $row->price, 2, ',', '.' )
+                );
             }
         }
 
-        $subject = sprintf( '[%s] Nieuwe boeking – %s (%d spot(s))', get_bloginfo( 'name' ), $customer_name, count( $booking_ids ) );
-        $body    = sprintf(
-            "Nieuwe boeking ontvangen:\n\nKlant: %s\nE-mail: %s\nTelefoon: %s\nLayout: %s\nNotes: %s\n\nGeboekte spots:\n%s\nTotaalprijs: €%s\n\nBeheer boekingen in WP Admin → Booking Layouts.",
-            $customer_name,
-            $customer_email,
-            $customer_phone,
-            $layout_title,
-            $notes,
-            $spots_text,
-            number_format( $total, 2, ',', '.' )
-        );
+        $count   = count( $booking_ids );
+        $subject = sprintf( 'Nieuwe boeking – %s – %d %s', $customer_name, $count, $count === 1 ? 'spot' : 'spots' );
 
-        wp_mail( $admin_email, $subject, $body );
+        ob_start();
+        include VB_PLUGIN_DIR . 'templates/email-admin-melding.php';
+        $body = ob_get_clean();
+
+        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+        wp_mail( $admin_email, $subject, $body, $headers );
     }
 
     private static function send_customer_notification_bulk( $booking_ids, $layout_id, $customer_name, $customer_email ) {
         global $wpdb;
 
-        $layout_title = get_the_title( $layout_id );
-        $spots_text   = '';
-        $total        = 0.0;
+        $layout_title   = get_the_title( $layout_id );
+        $currency       = get_option( 'vb_currency_symbol', '€' );
+        $spots_rows_html = '';
+        $total          = 0.0;
 
         foreach ( $booking_ids as $booking_id ) {
             $row = $wpdb->get_row( $wpdb->prepare(
@@ -481,21 +485,25 @@ class VB_REST_API {
                 $booking_id
             ) );
             if ( $row ) {
-                $total      += (float) $row->price;
-                $spots_text .= sprintf( "  - %s (€%s)\n", $row->label, number_format( (float) $row->price, 2, ',', '.' ) );
+                $total           += (float) $row->price;
+                $spots_rows_html .= sprintf(
+                    '<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">%s</td><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;">%s%s</td></tr>',
+                    esc_html( $row->label ),
+                    esc_html( $currency ),
+                    number_format( (float) $row->price, 2, ',', '.' )
+                );
             }
         }
 
-        $subject = sprintf( 'Boekingsbevestiging – %s (%d spot(s))', $layout_title, count( $booking_ids ) );
-        $body    = sprintf(
-            "Bedankt voor je boeking, %s!\n\nLayout: %s\n\nGeboekte spots:\n%s\nTotaalprijs: €%s\nStatus: In afwachting\n\nJe ontvangt een bericht zodra je boeking is bevestigd.",
-            $customer_name,
-            $layout_title,
-            $spots_text,
-            number_format( $total, 2, ',', '.' )
-        );
+        $count   = count( $booking_ids );
+        $subject = sprintf( 'Boekingsbevestiging – %s – %d %s', $layout_title, $count, $count === 1 ? 'spot' : 'spots' );
 
-        wp_mail( $customer_email, $subject, $body );
+        ob_start();
+        include VB_PLUGIN_DIR . 'templates/email-klant-bevestiging.php';
+        $body = ob_get_clean();
+
+        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+        wp_mail( $customer_email, $subject, $body, $headers );
     }
 
     private static function send_admin_notification( $booking_data, $booking_id ) {

@@ -14,9 +14,9 @@
 - Er is een bevestigingsmail ontvangen.
 - De mail bevat: layout naam, spot label(s), prijs, totaalprijs, status.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd
 
-**Opmerking:**
+**Opmerking:** De klant ontvangt een bevestigingsmail met alle boekingsdetails: de layoutnaam, spot label(s), prijs per spot, totaalprijs en de status.
 
 ---
 
@@ -32,7 +32,7 @@
 
 **Resultaat:** ☐ Geslaagd ☐ Mislukt
 
-**Opmerking:**
+**Opmerking:** De Admin ontvangt een notificatiemail met alle boekingsdetails: klantnaam, e-mail, telefoon, spot(s), layout, notes.
 
 ---
 
@@ -47,6 +47,14 @@
 - De admin ontvangt precies 1 mail met alle 3 de spots erin.
 - De totaalprijs in de mail is de som van alle 3 de spots.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** Zowel de klant als de admin ontvangen één mail met alle geboekte spots en de totaalprijs.
+Bijvoorbeeld: 
+
+Geboekte spots:
+  - S22 (€10,00)
+  - S26 (€10,00)
+  - S24 (€10,00)
+
+Totaalprijs: €30,00

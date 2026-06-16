@@ -54,7 +54,7 @@
             else if (isUnavailable) stateClass = 'vb-spot--unavailable';
 
             const priceText = parseFloat(spot.price) > 0
-                ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString(vbPublic.currencyLocale)
+                ? ' - ' + currencySymbol + parseFloat(spot.price).toLocaleString(vbPublic.currencyNotatie)
                 : '';
 
             const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
@@ -74,7 +74,7 @@
                     $('<div>', {
                         class: 'vb-tooltip',
                         text: (spot.label || 'Spot #' + spot.id) + priceText +
-                              (isBooked ? ' (Booked)' : isUnavailable ? ' (Unavailable)' : ''),
+                              (isBooked ? ' (Geboekt)' : isUnavailable ? ' (Niet beschikbaar)' : ''),
                     })
                 );
 
@@ -130,7 +130,7 @@
         }, 0);
 
         $selectionBar.find('.vb-selected-count').text(selected.length);
-        $selectionBar.find('.vb-selected-total').text( currencySymbol + total.toLocaleString(vbPublic.currencyLocale));
+        $selectionBar.find('.vb-selected-total').text( currencySymbol + total.toLocaleString(vbPublic.currencyNotatie));
         $selectionBar.slideDown(200);
     }
 
@@ -213,15 +213,15 @@
             $summary.append(
                 $('<div>', { class: 'vb-summary-row' }).append(
                     $('<span>').text(s.label || 'Spot #' + s.id),
-                    $('<span>').text(currencySymbol + price.toLocaleString(vbPublic.currencyLocale))
+                    $('<span>').text(currencySymbol + price.toLocaleString(vbPublic.currencyNotatie))
                 )
             );
         });
 
         $summary.append(
             $('<div>', { class: 'vb-summary-row' }).append(
-                $('<span>').text('Total'),
-                $('<span>').text(currencySymbol + total.toLocaleString(vbPublic.currencyLocale))
+                $('<span>').text('Totaal'),
+                $('<span>').text(currencySymbol + total.toLocaleString(vbPublic.currencyNotatie))
             )
         );
 
@@ -241,7 +241,7 @@
         e.preventDefault();
 
         $form.find('.vb-form-message').hide();
-        const $btn = $form.find('button[type="submit"]').prop('disabled', true).text('Booking…');
+        const $btn = $form.find('button[type="submit"]').prop('disabled', true).text('Bezig…');
 
         const customerName  = $form.find('[name="customer_name"]').val().trim();
         const customerEmail = $form.find('[name="customer_email"]').val().trim();
@@ -249,8 +249,8 @@
         const notes         = $form.find('[name="notes"]').val().trim();
 
         if (!customerName || !customerEmail) {
-            showFormMessage('Please fill in all required fields.', 'error');
-            $btn.prop('disabled', false).text('Confirm Booking');
+            showFormMessage('Vul alle verplichte velden in.', 'error');
+            $btn.prop('disabled', false).text('Boeking bevestigen');
             return;
         }
 
@@ -271,7 +271,7 @@
                 xhr.setRequestHeader('X-WP-Nonce', NONCE);
             },
             success: function (res) {
-                $btn.prop('disabled', false).text('Confirm Booking');
+                $btn.prop('disabled', false).text('Boeking bevestigen');
 
                 showFormMessage(
                     '🎉 Boeking bevestigd! Je ontvangt een bevestigingsmail.',
@@ -287,7 +287,7 @@
                 }, 2000);
             },
             error: function (xhr) {
-                $btn.prop('disabled', false).text('Confirm Booking');
+                $btn.prop('disabled', false).text('Boeking bevestigen');
                 const res = xhr.responseJSON;
                 showFormMessage(res?.message || 'Er is iets misgegaan. Probeer het opnieuw.', 'error');
                 loadSpots();

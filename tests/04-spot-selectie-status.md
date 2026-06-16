@@ -12,12 +12,11 @@
 
 **Verwachting:**
 - Er gebeurt niets — de spot reageert niet op de klik.
-- De cursor toont `not-allowed` bij hover.
 - De tooltip toont "(Booked)" achter de spot naam.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd
 
-**Opmerking:**
+**Opmerking:** De spot reageert niet op de klik en toont "Booked" achter de naam.
 
 ---
 
@@ -30,12 +29,11 @@
 
 **Verwachting:**
 - Er gebeurt niets — de spot reageert niet op de klik.
-- De cursor toont `not-allowed` bij hover.
 - De tooltip toont "(Unavailable)" achter de spot naam.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De spot reageert niet op de klik en toont "Unavailable" achter de naam.
 
 ---
 
@@ -48,9 +46,9 @@
 - Klik nogmaals op dezelfde spot.
 
 **Verwachting:**
-- Eerste klik: spot wordt oranje, selection bar verschijnt onderaan met 1 spot en de prijs.
+- Eerste klik: spot wordt oranje, selection bar verschijnt onderaan met (spot/spots) en de prijs.
 - Tweede klik: spot wordt weer groen, selection bar verdwijnt.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De spot wordt oranje bij de eerste klik en de selectiebalk verschijnt onderaan met de naam en prijs. Bij de tweede klik wordt de spot weer groen en verdwijnt de selectiebalk.

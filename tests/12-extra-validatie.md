@@ -21,7 +21,7 @@ fetch('/wp-json/visual-booker/v1/bookings/bulk', {
     },
     body: JSON.stringify({
         spot_ids: [GEBOEKTE_SPOT_ID],
-        layout_id: 7,
+        layout_id: JOUW_LAYOUT_ID,
         customer_name: 'Jan de Vries',
         customer_email: 'test@test.nl'
     })
@@ -47,7 +47,7 @@ fetch('/wp-json/visual-booker/v1/bookings/bulk', {
 - Voer het volgende uit:
 
 ```js
-fetch('/wp-json/visual-booker/v1/booking/1/status', {
+fetch('/wp-json/visual-booker/v1/booking/BESTAAND_BOEKING_ID/status', {
     method: 'PATCH',
     headers: {
         'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ fetch('/wp-json/visual-booker/v1/booking/1/status', {
 ```
 
 **Verwachting:**
-- De API geeft een foutmelding terug: ongeldige statuswaarde.
+- De API geeft een foutmelding terug: "Ongeldige statuswaarde."
 - De boeking status verandert niet.
 
 **Resultaat:** ☐ Geslaagd ☐ Mislukt

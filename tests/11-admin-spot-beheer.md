@@ -17,9 +17,10 @@
 - De spot wordt opgeslagen in de database.
 - De statusbalk toont "Spot added ✓".
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Mislukt
 
-**Opmerking:**
+**Opmerking:** De spot verschijnt wel op de canvas en de statusbalk toont "Spot added ✓", maar de spot wordt niet automatisch opgeslagen in de database. 
+Je moet handmatig op "Save All Spots" klikken om de spot op te slaan.
 
 ---
 
@@ -35,9 +36,9 @@
 - De spot verdwijnt van de canvas.
 - De spot is verwijderd uit de database.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De spot verdwijnt direct van de canvas en wordt ook uit de database verwijderd.
 
 ---
 
@@ -55,6 +56,6 @@
 - De statusbalk toont "All spots saved ✓".
 - Na verversen staat de spot op de nieuwe positie.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De nieuwe positie wordt opgeslagen, de statusbalk toont "All spots saved ✓" en na het verversen staat de spot op de nieuwe positie.

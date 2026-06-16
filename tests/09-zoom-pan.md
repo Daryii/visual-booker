@@ -15,9 +15,9 @@
 - Het zoom percentage toont een hogere waarde (bijv. 125%).
 - De spots blijven op de juiste positie staan.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De plattegrond is groter geworden, het zoom percentage toont een hogere waarde (125%) en de spots blijven op de juiste positite staan.
 
 ---
 
@@ -31,9 +31,9 @@
 - De plattegrond gaat terug naar 100%.
 - Het zoom percentage toont "100%".
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De plattegrond gaat van 200% naar 100% terug met de Reset knop en het zoom percentage toont 100%
 
 ---
 
@@ -47,6 +47,6 @@
 - De plattegrond schuift mee met de muis.
 - De cursor verandert naar een "grabbing" hand.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De plattegrond schuift correct mee met de muis en de cursor verandert naar een grijpende hand voor meer duidelijkheid.

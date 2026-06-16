@@ -18,10 +18,12 @@
 - De status verandert van "Pending" (geel) naar "Approved" (groen).
 - Na verversen blijft de status op "Approved" staan.
 - De spot op de frontend blijft rood (geboekt).
+- De klant krijgt een bevestiging bericht.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
 
-**Opmerking:**
+**Resultaat:** ☐ Mislukt
+
+**Opmerking:** De test is mislukt. De status verandert wel naar "Approved" en blijft ook na het verversen op "Approved" staan, maar de klant ontvangt geen bevestigingsbericht.
 
 ---
 
@@ -34,9 +36,10 @@
 
 **Verwachting:**
 - De status verandert naar "Cancelled" (rood).
-- Na verversen blijft de status op "Cancelled" staan.
+- Na het auto-verversen verdwijnt het boeking van de tabel.
+- Na het verversen van de pagina moet de boeking uit de tabel verwijderd zijn.
 - De spot op de frontend wordt weer groen (beschikbaar).
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Mislukt
 
-**Opmerking:**
+**Opmerking:** De test is mislukt. De status verandert wel naar "Cancelled" en na het auto-verversen verdwijnt de boeking uit de tabel, maar na het verversen van de pagina wordt de cancelled boeking weer getoond in plaats van verwijderd.
