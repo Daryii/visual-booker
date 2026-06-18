@@ -58,7 +58,6 @@ CREATE TABLE {$spots} (
     spot_type_id   TINYINT UNSIGNED NOT NULL DEFAULT 1,
     price          DECIMAL(10,2)    NOT NULL DEFAULT 0.00,
     status_id      TINYINT UNSIGNED NOT NULL DEFAULT 1,
-    color          VARCHAR(7)       NOT NULL DEFAULT '#4CAF50',
     meta_json      LONGTEXT         NULL COMMENT 'extra data as JSON',
     sort_order     INT              NOT NULL DEFAULT 0,
     created_at     DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -184,7 +183,6 @@ PRIMARY KEY (id)
             'price'        => 0,
             'status_id'    => 1,
             'shape'        => 'rectangle',
-            'color'        => '#4CAF50',
             'meta_json'    => null,
             'sort_order'   => 0,
         );

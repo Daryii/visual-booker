@@ -6,7 +6,6 @@
 .vb-wrapper {
     max-width: 100%;
     margin: 0 auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     color: #333;
 }
 
@@ -147,7 +146,7 @@
 
 .vb-spot-public:hover:not(.vb-spot--booked):not(.vb-spot--unavailable) {
     transform: scale(1.1);
-    z-index: 20;
+    z-index: 1000;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -174,13 +173,10 @@
     opacity: 0.5;
 }
 
-/* Tooltip on hover */
-.vb-spot-public .vb-tooltip {
+/* Globale tooltip — position fixed zodat overflow van canvas container niet afknipt */
+#vb-tooltip {
     display: none;
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
     background: #333;
     color: #fff;
     padding: 6px 10px;
@@ -188,36 +184,8 @@
     font-size: 12px;
     font-weight: 400;
     white-space: nowrap;
-    text-shadow: none;
-    z-index: 100;
+    z-index: 9999;
     pointer-events: none;
-}
-
-.vb-spot-public .vb-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: #333;
-}
-
-.vb-spot-public:hover .vb-tooltip {
-    display: block;
-}
-
-/* VB-111: tooltip onder de spot als er boven geen ruimte is */
-.vb-spot--tooltip-below .vb-tooltip {
-    bottom: auto;
-    top: calc(100% + 8px);
-}
-
-.vb-spot--tooltip-below .vb-tooltip::after {
-    top: auto;
-    bottom: 100%;
-    border-top-color: transparent;
-    border-bottom-color: #333;
 }
 
 /* Selection bar */

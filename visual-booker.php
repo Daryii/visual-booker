@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /*  Constanten                                                         */
 /* ------------------------------------------------------------------ */
 define( 'VB_VERSION', '1.0.2' );
-define( 'VB_DB_VERSION', '61835' );
+define( 'VB_DB_VERSION', '61836' );
 define( 'VB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'VB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'VB_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -75,10 +75,11 @@ function vb_admin_assets( $hook ) {
     );
 
     wp_localize_script( 'vb-admin-js', 'vbAdmin', array(
-        'restUrl'  => esc_url_raw( rest_url( 'visual-booker/v1/' ) ),
-        'nonce'    => wp_create_nonce( 'wp_rest' ),
-        'postId'   => get_the_ID(),
-        'pluginUrl'=> VB_PLUGIN_URL,
+        'restUrl'     => esc_url_raw( rest_url( 'visual-booker/v1/' ) ),
+        'nonce'       => wp_create_nonce( 'wp_rest' ),
+        'postId'      => get_the_ID(),
+        'pluginUrl'   => VB_PLUGIN_URL,
+        'spotStatuses' => VB_DB::get_spot_statuses(),
     ) );
 }
 

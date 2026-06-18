@@ -158,10 +158,7 @@ class VB_Post_Type {
                             <th><label for="vb-spot-price"><?php esc_html_e( 'Price', 'visual-booker' ); ?></label></th>
                             <td><input type="number" id="vb-spot-price" step="0.01" min="0" value="0" /></td>
                         </tr>
-                        <tr>
-                            <th><label for="vb-spot-color"><?php esc_html_e( 'Color', 'visual-booker' ); ?></label></th>
-                            <td><input type="color" id="vb-spot-color" value="#4CAF50" /></td>
-                        </tr>
+
                         <tr>
                             <th><label for="vb-spot-status"><?php esc_html_e( 'Status', 'visual-booker' ); ?></label></th>
                             <td>

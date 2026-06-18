@@ -22,6 +22,12 @@
     let spots    = [];
     let selected = [];  // array van geselecteerde spot objecten
 
+    // Globale tooltip — één element buiten de canvas container om afknippen te voorkomen
+    if (!$('#vb-tooltip').length) {
+        $('<div>', { id: 'vb-tooltip' }).appendTo('body');
+    }
+    const $tooltip = $('#vb-tooltip');
+
     let zoomLevel   = 1;
     const ZOOM_MIN  = 1;
     const ZOOM_MAX  = 3;
@@ -67,22 +73,30 @@
                     top: spot.pos_y + '%',
                     width: spot.width + '%',
                     height: spot.height + '%',
-                    backgroundColor: isBooked ? undefined : (spot.color || '#4CAF50'),
+                    backgroundColor: isBooked ? undefined : '#4CAF50',
                 })
-                .append($('<span>', { class: 'vb-spot-label', text: spot.label }))
-                .append(
-                    $('<div>', {
-                        class: 'vb-tooltip',
-                        text: (spot.label || 'Spot #' + spot.id) + priceText +
-                              (isBooked ? ' (Geboekt)' : isUnavailable ? ' (Niet beschikbaar)' : ''),
-                    })
-                );
+                .append($('<span>', { class: 'vb-spot-label', text: spot.label }));
 
-            // Tooltip richting bepalen op basis van positie in canvas    
+            // Tooltip tekst opslaan als data attribuut
+            const tooltipTekst = (spot.label || 'Spot #' + spot.id) + priceText +
+                (isBooked ? ' (Geboekt)' : isUnavailable ? ' (Niet beschikbaar)' : '');
+            $spot.data('tooltip', tooltipTekst);
+
+            // Tooltip tonen via het globale element (position: fixed, geen afknippen)
             $spot.on('mouseenter', function () {
-                const spotTop = this.getBoundingClientRect().top;
-                const containerTop = $wrapper.find('.vb-canvas-container')[0].getBoundingClientRect().top;
-                $(this).toggleClass('vb-spot--tooltip-below', spotTop - containerTop < 50);
+                const rect = this.getBoundingClientRect();
+                $tooltip.text($(this).data('tooltip')).show();
+
+                const tH = $tooltip.outerHeight();
+                const tW = $tooltip.outerWidth();
+                const top = rect.top > tH + 16 ? rect.top - tH - 8 : rect.bottom + 8;
+                const left = Math.max(8, Math.min(window.innerWidth - tW - 8, rect.left + rect.width / 2 - tW / 2));
+
+                $tooltip.css({ top: top, left: left });
+            });
+
+            $spot.on('mouseleave', function () {
+                $tooltip.hide();
             });
 
             // Klik handler voor selecteerbare spots

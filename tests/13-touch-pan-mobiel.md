@@ -15,6 +15,6 @@
 - De plattegrond schuift mee met de vinger.
 - Spots kunnen nog steeds geselecteerd worden via een korte tik.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** De plattegrond schuift correct mee met de vinger en spots zijn selecteerbaar via een korte tik, maar de UI kan nog verbeterd worden.

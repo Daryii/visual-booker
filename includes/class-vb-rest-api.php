@@ -74,6 +74,13 @@ class VB_REST_API {
             'callback'            => array( __CLASS__, 'get_bookings' ),
             'permission_callback' => array( __CLASS__, 'admin_check' ),
         ) );
+
+        // POST layout instellingen opslaan (admin)
+        register_rest_route( $ns, '/layout/(?P<id>\d+)/settings', array(
+            'methods'             => 'POST',
+            'callback'            => array( __CLASS__, 'update_layout_settings' ),
+            'permission_callback' => array( __CLASS__, 'admin_check' ),
+        ) );
     }
 
     /* ------------------------------------------------------------------ */
@@ -423,6 +430,18 @@ class VB_REST_API {
         $layout_id = (int) $request['layout_id'];
         $bookings  = VB_DB::get_bookings_for_layout( $layout_id );
         return rest_ensure_response( $bookings );
+    }
+
+    // Sla layout instellingen op (bijv. max spots per boeking)
+    public static function update_layout_settings( $request ) {
+        $layout_id = (int) $request['id'];
+        $data      = $request->get_json_params();
+
+        if ( isset( $data['max_spots'] ) ) {
+            update_post_meta( $layout_id, '_vb_max_spots_per_booking', absint( $data['max_spots'] ) ?: 10 );
+        }
+
+        return rest_ensure_response( array( 'success' => true ) );
     }
 
     /* ------------------------------------------------------------------ */

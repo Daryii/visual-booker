@@ -32,9 +32,11 @@ fetch('/wp-json/visual-booker/v1/bookings/bulk', {
 - De API geeft een foutmelding terug: "Geen van de geselecteerde spots kon worden geboekt. Ze bestaan niet of zijn al bezet."
 - Er wordt geen nieuwe boeking aangemaakt.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd
 
-**Opmerking:**
+**Opmerking:** De API geeft een foutmelding terug:
+{code: 'geen_boekingen', message: 'Geen van de geselecteerde spots kon worden geboekt. Ze bestaan niet of zijn al bezet.', data: {…}}
+en er wordt geen nieuwe boeking aangemaakt. 
 
 ---
 
@@ -61,9 +63,9 @@ fetch('/wp-json/visual-booker/v1/booking/BESTAAND_BOEKING_ID/status', {
 - De API geeft een foutmelding terug: "Ongeldige statuswaarde."
 - De boeking status verandert niet.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd
 
-**Opmerking:**
+**Opmerking:** De boekingstatus is niet veranderd. Tijdens deze test is een nieuwe bug ontdekt: de statuswijzigings logica werkt niet correct.
 
 ---
 
@@ -82,6 +84,7 @@ fetch('/wp-json/visual-booker/v1/booking/BESTAAND_BOEKING_ID/status', {
 - De statusbalk toont "All spots saved ✓".
 - Na verversen zijn alle wijzigingen zichtbaar.
 
-**Resultaat:** ☐ Geslaagd ☐ Mislukt
+**Resultaat:** ☐ Geslaagd 
 
-**Opmerking:**
+**Opmerking:** Alle spots worden opgeslagen, de statusbalk toont "All spots saved ✓"
+En na het verversen zijn alle wijzigingen zichbaar.

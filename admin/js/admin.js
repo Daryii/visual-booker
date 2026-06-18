@@ -81,12 +81,27 @@
         });
     }
 
+    function getStatusName(statusId) {
+        const status = vbAdmin.spotStatuses.find(s => s.id == statusId);
+        return status ? status.name : 'open';
+    }
+
     function renderSpot(spot) {
         const isBooked   = spot.booked;
+        const statusName = getStatusName(spot.status_id);
         const shapeClass = spot.shape === 'circle' ? ' vb-spot--circle' : '';
-        const bookedClass = isBooked ? ' vb-spot--booked' : '';
+
+        const stateClass = isBooked                     ? ' vb-spot--booked'
+                         : statusName === 'locked'      ? ' vb-spot--locked'
+                         : statusName === 'maintenance' ? ' vb-spot--maintenance'
+                         : '';
+        const bgColor    = isBooked                     ? '#ef5350'
+                         : statusName === 'locked'      ? '#9E9E9E'
+                         : statusName === 'maintenance' ? '#C8BA6A'
+                         : '#4CAF50';
+
         const $spot = $('<div>', {
-            class: 'vb-spot' + shapeClass + bookedClass,
+            class: 'vb-spot' + shapeClass + stateClass,
             'data-id': spot.id,
         })
             .css({
@@ -94,7 +109,7 @@
                 top: spot.pos_y + '%',
                 width: spot.width + '%',
                 height: spot.height + '%',
-                backgroundColor: isBooked ? undefined : (spot.color || '#4CAF50'),
+                backgroundColor: bgColor,
             })
             .append($('<span>', { class: 'vb-spot-label', text: spot.label || '' }))
             .append($('<div>', { class: 'vb-resize-handle' }));
@@ -213,7 +228,6 @@
         $('#vb-spot-label').val(spot.label);
         $('#vb-spot-type').val(spot.spot_type_id || 1);
         $('#vb-spot-price').val(spot.price || 0);
-        $('#vb-spot-color').val(spot.color || '#4CAF50');
         $('#vb-spot-status').val(spot.status_id || 1);
         $('#vb-spot-editor').slideDown(200);
     }
@@ -234,12 +248,10 @@
         spot.label        = $('#vb-spot-label').val();
         spot.spot_type_id = parseInt($('#vb-spot-type').val());
         spot.price        = parseFloat($('#vb-spot-price').val()) || 0;
-        spot.color        = $('#vb-spot-color').val();
         spot.status_id    = parseInt($('#vb-spot-status').val());
 
         // Spot opnieuw tekenen
         const $el = $canvas.find('.vb-spot[data-id="' + spot.id + '"]');
-        $el.css('backgroundColor', spot.color);
         $el.find('.vb-spot-label').text(spot.label);
         $el.toggleClass('vb-spot--circle', spot.shape === 'circle');
 
@@ -295,7 +307,6 @@
             spot_type_id: 1,
             price: 0,
             status_id: 1,
-            color: '#4CAF50',
             shape: shape,
         };
 
@@ -335,6 +346,7 @@
             },
             success: function () {
                 showStatus('Saved ✓');
+                loadSpots();
             },
             error: function () {
                 showStatus('Error saving spot ✗');
@@ -354,6 +366,7 @@
             },
             success: function () {
                 showStatus('All spots saved ✓');
+                loadSpots();
             },
             error: function () {
                 showStatus('Error saving spots ✗');
@@ -410,6 +423,9 @@
                         $row.fadeOut(300, function () { $(this).remove(); });
                     }, 1500);
                 }
+
+                // Canvas bijwerken
+                loadSpots();
             },
             error: function () {
                 showStatus('Error updating booking ✗');
@@ -431,6 +447,30 @@
     $('#vb-toggle-max-spots').on('click', function () {
         $(this).toggleClass('vb-grid-is-active');
         $('#vb-max-spots-per-booking').toggle($(this).hasClass('vb-grid-is-active'));
+    });
+
+    let maxSpotsTimer;
+    $('#vb-max-spots-per-booking').on('change', function () {
+        const maxSpots = parseInt($(this).val()) || 10;
+
+        clearTimeout(maxSpotsTimer);
+        maxSpotsTimer = setTimeout(function () {
+            $.ajax({
+                url: API + 'layout/' + vbAdmin.postId + '/settings',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ max_spots: maxSpots }),
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('X-WP-Nonce', NONCE);
+                },
+                success: function () {
+                    showStatus('Opgeslagen ✓');
+                },
+                error: function () {
+                    showStatus('Fout bij opslaan ✗');
+                },
+            });
+        }, 1000);
     });
 
     /* ================================================================== */

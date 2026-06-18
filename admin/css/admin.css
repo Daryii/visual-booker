@@ -95,6 +95,19 @@
 .vb-spot.vb-spot--booked {
     background-color: #ef5350 !important;
     opacity: 0.7;
+    cursor: default;
+}
+
+.vb-spot.vb-spot--locked {
+    background-color: #9E9E9E !important;
+    opacity: 0.6;
+    cursor: default;
+}
+
+.vb-spot.vb-spot--maintenance {
+    background-color: #C8BA6A !important;
+    opacity: 0.8;
+    cursor: default;
 }
 
 .vb-spot .vb-spot-label {
