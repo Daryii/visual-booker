@@ -1,6 +1,6 @@
 <?php
 /**
- * [visual_booker id="123"] shortcode.
+ * [visual_booker id="123"] shortcode registratie en weergave.
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -40,7 +40,7 @@ class VB_Shortcode {
             VB_VERSION,
             true
         );
-        // Enqueue assets
+        // Bestanden laden
         wp_enqueue_style( 'vb-public-css' );
         wp_enqueue_script( 'vb-public-js' );
         wp_localize_script( 'vb-public-js', 'vbPublic', array(
@@ -48,7 +48,9 @@ class VB_Shortcode {
             'nonce'    => wp_create_nonce( 'wp_rest' ),
             'layoutId' => $layout_id,
             'spotStatuses' => VB_DB::get_spot_statuses(),
-            'currencySymbol' => get_option('vb_currency_symbol','€')
+            'currencySymbol' => get_option('vb_currency_symbol','€'),
+            'currencyNotatie' => str_replace( '_', '-', get_locale() ),
+            'maxSpotsPerBooking' => absint( get_post_meta( $layout_id, '_vb_max_spots_per_booking', true ) ) ?: 10,
         ) );
 
         ob_start();
@@ -57,7 +59,7 @@ class VB_Shortcode {
     }
 }
 
-// Register shortcode immediately
+// Shortcode direct registreren
 VB_Shortcode::init();
 
 

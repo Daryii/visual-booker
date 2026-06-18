@@ -1,6 +1,6 @@
 <?php
 /**
- * REST API endpoints for spots and bookings.
+ * REST API endpoints voor spots en boekingen.
  *
  * Namespace: visual-booker/v1
  */
@@ -14,7 +14,7 @@ class VB_REST_API {
 
         /* ---- Spots ---- */
 
-        // GET spots for a layout
+        // GET spots voor een layout
         register_rest_route( $ns, '/spots/(?P<layout_id>\d+)', array(
             'methods'             => 'GET',
             'callback'            => array( __CLASS__, 'get_spots' ),
@@ -24,60 +24,67 @@ class VB_REST_API {
             ),
         ) );
 
-        // POST save / update a single spot (admin)
+        // POST één spot opslaan of bijwerken (admin)
         register_rest_route( $ns, '/spot', array(
             'methods'             => 'POST',
             'callback'            => array( __CLASS__, 'save_spot' ),
             'permission_callback' => array( __CLASS__, 'admin_check' ),
         ) );
 
-        // POST bulk save spots (admin)
+        // POST meerdere spots tegelijk opslaan (admin)
         register_rest_route( $ns, '/spots/bulk', array(
             'methods'             => 'POST',
             'callback'            => array( __CLASS__, 'bulk_save_spots' ),
             'permission_callback' => array( __CLASS__, 'admin_check' ),
         ) );
 
-        // DELETE a spot (admin)
+        // DELETE een spot verwijderen (admin)
         register_rest_route( $ns, '/spot/(?P<id>\d+)', array(
             'methods'             => 'DELETE',
             'callback'            => array( __CLASS__, 'delete_spot' ),
             'permission_callback' => array( __CLASS__, 'admin_check' ),
         ) );
 
-        /* ---- Bookings ---- */
+        /* ---- Boekingen ---- */
 
-        // POST create a booking (public / front-end)
+        // POST één boeking aanmaken (publiek / front-end)
         register_rest_route( $ns, '/booking', array(
             'methods'             => 'POST',
             'callback'            => array( __CLASS__, 'create_booking' ),
             'permission_callback' => '__return_true',
         ) );
 
-        // POST create multiple bookings in one request (VB-98)
+        // POST meerdere boekingen tegelijk aanmaken
         register_rest_route( $ns, '/bookings/bulk', array(
             'methods'             => 'POST',
             'callback'            => array( __CLASS__, 'create_bookings_bulk' ),
             'permission_callback' => '__return_true',
         ) );
 
-        // PATCH update booking status (admin)
+        // PATCH boekingsstatus bijwerken (admin)
         register_rest_route( $ns, '/booking/(?P<id>\d+)/status', array(
             'methods'             => 'PATCH',
             'callback'            => array( __CLASS__, 'update_booking_status' ),
             'permission_callback' => array( __CLASS__, 'admin_check' ),
         ) );
 
-        // GET bookings for a layout (admin)
+        // GET boekingen voor een layout (admin)
         register_rest_route( $ns, '/bookings/(?P<layout_id>\d+)', array(
             'methods'             => 'GET',
             'callback'            => array( __CLASS__, 'get_bookings' ),
             'permission_callback' => array( __CLASS__, 'admin_check' ),
         ) );
+
+        // POST layout instellingen opslaan (admin)
+        register_rest_route( $ns, '/layout/(?P<id>\d+)/settings', array(
+            'methods'             => 'POST',
+            'callback'            => array( __CLASS__, 'update_layout_settings' ),
+            'permission_callback' => array( __CLASS__, 'admin_check' ),
+        ) );
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Permission helpers                                                  */
+    /*  Toegangscontrole                                                    */
     /* ------------------------------------------------------------------ */
 
     public static function admin_check() {
@@ -93,7 +100,7 @@ class VB_REST_API {
         $spots     = VB_DB::get_spots( $layout_id );
         $booked    = VB_DB::get_booked_spot_ids( $layout_id );
 
-        // Attach a `booked` flag for the front-end
+        // Voeg een `booked` vlag toe voor de front-end
         foreach ( $spots as &$spot ) {
             $spot->booked = in_array( (string) $spot->id, $booked, true );
         }
@@ -125,6 +132,11 @@ class VB_REST_API {
         return new WP_Error('invalid_value', 'Prijs mag niet negatief zijn.', array('status' => 400));
        }
 
+       // HTML tags blokkeren in label
+       if ( $data['label'] !== wp_strip_all_tags( $data['label'] ) ) {
+           return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in het label.', array( 'status' => 400 ) );
+       }
+
        // Data sanitizen
        $data['label'] = sanitize_text_field($data['label']);
        $data['layout_id'] = absint($data['layout_id']);
@@ -133,9 +145,9 @@ class VB_REST_API {
        $data['width'] = floatval($data['width'] ?? 3);
        $data['height'] = floatval($data['height'] ?? 3);
        $data['price'] = floatval($data['price'] ?? 0);
-       $data['color'] = sanitize_hex_color($data['color'] ?? '#4CAF50') ?: '#4CAF50';
-       $data['status'] = sanitize_text_field($data['status'] ?? 'open');
-       $data['spot_type'] = sanitize_text_field($data['spot_type'] ?? 'seat');
+       $data['color']        = sanitize_hex_color($data['color'] ?? '#4CAF50') ?: '#4CAF50';
+       $data['status_id']    = absint($data['status_id'] ?? 1);
+       $data['spot_type_id'] = absint($data['spot_type_id'] ?? 1);
 
         $id   = VB_DB::upsert_spot( $data );
         return rest_ensure_response( array( 'success' => true, 'id' => $id ) );
@@ -174,6 +186,12 @@ class VB_REST_API {
                 continue;
             }
             
+            // HTML tags blokkeren in label
+            if ( $s['label'] !== wp_strip_all_tags( $s['label'] ) ) {
+                $errors[] = sprintf( 'Spot %d: HTML tags zijn niet toegestaan in het label.', $index + 1 );
+                continue;
+            }
+
             // Data sanitizen
             $s['label'] = sanitize_text_field( $s['label'] );
             $s['layout_id'] = absint( $s['layout_id'] );
@@ -182,9 +200,9 @@ class VB_REST_API {
             $s['width'] = floatval( $s['width'] ?? 3 );
             $s['height'] = floatval( $s['height'] ?? 3 );
             $s['price'] = floatval( $s['price'] ?? 0 );
-            $s['color'] = sanitize_hex_color( $s['color'] ?? '#4CAF50' ) ?: '#4CAF50';
-            $s['status'] = sanitize_text_field( $s['status'] ?? 'open');
-            $s['spot_type'] = sanitize_text_field( $s['spot_type'] ?? 'seat');
+            $s['color']        = sanitize_hex_color( $s['color'] ?? '#4CAF50' ) ?: '#4CAF50';
+            $s['status_id']    = absint( $s['status_id'] ?? 1 );
+            $s['spot_type_id'] = absint( $s['spot_type_id'] ?? 1 );
 
             $ids[] = VB_DB::upsert_spot($s);
         }
@@ -202,7 +220,7 @@ class VB_REST_API {
     }
 
     /* ------------------------------------------------------------------ */
-    /*  Bookings                                                            */
+    /*  Boekingen                                                           */
     /* ------------------------------------------------------------------ */
 
     public static function create_booking( $request ) {
@@ -212,7 +230,7 @@ class VB_REST_API {
 
         $data = $request->get_json_params();
 
-        // Basic validation
+        // Basic Validatie
         $required = array( 'spot_id', 'layout_id', 'customer_name', 'customer_email' );
         foreach ( $required as $field ) {
             if ( empty( $data[ $field ] ) ) {
@@ -220,20 +238,52 @@ class VB_REST_API {
             }
         }
 
-        // Check if spot is already booked
+        // Naam lengte valideren
+        $customer_name_length = mb_strlen( trim( $data['customer_name'] ) );
+        if ( $customer_name_length < 2 || $customer_name_length > 255 ) {
+            return new WP_Error( 'invalid_name', 'Naam moet tussen 2 en 255 tekens zijn.', array( 'status' => 400 ) );
+        }
+
+        // E-mailadres valideren
+        $customer_email = sanitize_email( $data['customer_email'] );
+        if ( ! is_email( $customer_email ) ) {
+            return new WP_Error( 'invalid_email', 'Ongeldig e-mailadres.', array( 'status' => 400 ) );
+        }
+
+        // Layout bestaat?
+        $layout = get_post( absint( $data['layout_id'] ) );
+        if ( ! $layout || $layout->post_type !== 'vb_layout' ) {
+            return new WP_Error( 'invalid_layout', 'Layout niet gevonden.', array( 'status' => 404 ) );
+        }
+
+        // Spot bestaat?
+        if ( ! VB_DB::spot_exists( absint( $data['spot_id'] ) ) ) {
+            return new WP_Error( 'invalid_spot', 'Spot niet gevonden.', array( 'status' => 404 ) );
+        }
+
+        // Controleer of de spot al geboekt is
         $booked = VB_DB::get_booked_spot_ids( (int) $data['layout_id'] );
         if ( in_array( (string) $data['spot_id'], $booked, true ) ) {
             return new WP_Error( 'already_booked', 'This spot is already booked.', array( 'status' => 409 ) );
+        }
+
+        // HTML tags blokkeren in naam en notities
+        if ( $data['customer_name'] !== wp_strip_all_tags( $data['customer_name'] ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de naam.', array( 'status' => 400 ) );
+        }
+        $notes_raw = $data['notes'] ?? '';
+        if ( $notes_raw !== wp_strip_all_tags( $notes_raw ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de notities.', array( 'status' => 400 ) );
         }
 
         $booking_data = array(
             'spot_id'        => absint( $data['spot_id'] ),
             'layout_id'      => absint( $data['layout_id'] ),
             'customer_name'  => sanitize_text_field( $data['customer_name'] ),
-            'customer_email' => sanitize_email( $data['customer_email'] ),
-            'customer_phone' => sanitize_text_field( $data['customer_phone'] ?? '' ),
-            'booking_status' => 'pending',
-            'notes'          => sanitize_textarea_field( $data['notes'] ?? '' ),
+            'customer_email' => $customer_email,
+            'customer_phone'    => sanitize_text_field( $data['customer_phone'] ?? '' ),
+            'booking_status_id' => VB_DB::get_booking_status_id_by_name( 'pending' ),
+            'notes'             => sanitize_textarea_field( $data['notes'] ?? '' ),
         );
 
         $id = VB_DB::create_booking( $booking_data );
@@ -242,9 +292,9 @@ class VB_REST_API {
             return new WP_Error( 'db_error', 'Could not create booking.', array( 'status' => 500 ) );
         }
 
-        // Send admin notification email
+        // Stuur notificatiemail naar admin
         self::send_admin_notification( $booking_data, $id );
-        // Send customer notification email
+        // Stuur bevestigingsmail naar klant
         self::send_customer_notification($booking_data, $id);
 
         return rest_ensure_response( array(
@@ -273,9 +323,38 @@ class VB_REST_API {
 
         $layout_id      = absint( $data['layout_id'] );
         $customer_name  = sanitize_text_field( $data['customer_name'] );
+        $customer_name_length = mb_strlen( trim( $customer_name ) );
+        if ( $customer_name_length < 2 || $customer_name_length > 255 ) {
+            return new WP_Error( 'invalid_name', 'Naam moet tussen 2 en 255 tekens zijn.', array( 'status' => 400 ) );
+        }
+
         $customer_email = sanitize_email( $data['customer_email'] );
+        if ( ! is_email( $customer_email ) ) {
+            return new WP_Error( 'invalid_email', 'Ongeldig e-mailadres.', array( 'status' => 400 ) );
+        }
+        // HTML tags blokkeren in naam en notities
+        if ( $data['customer_name'] !== wp_strip_all_tags( $data['customer_name'] ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de naam.', array( 'status' => 400 ) );
+        }
+        $notes_raw = $data['notes'] ?? '';
+        if ( $notes_raw !== wp_strip_all_tags( $notes_raw ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de notities.', array( 'status' => 400 ) );
+        }
+
         $customer_phone = sanitize_text_field( $data['customer_phone'] ?? '' );
         $notes          = sanitize_textarea_field( $data['notes'] ?? '' );
+
+        // Layout bestaat?
+        $layout = get_post( $layout_id );
+        if ( ! $layout || $layout->post_type !== 'vb_layout' ) {
+            return new WP_Error( 'invalid_layout', 'Layout niet gevonden.', array( 'status' => 404 ) );
+        }
+
+        // Max spots per boeking controleren
+        $max_spots = absint( get_post_meta( $layout_id, '_vb_max_spots_per_booking', true ) ) ?: 10;
+        if ( count( $data['spot_ids'] ) > $max_spots ) {
+            return new WP_Error( 'te_veel_spots', sprintf( 'Je kunt maximaal %d spots tegelijk boeken.', $max_spots ), array( 'status' => 400 ) );
+        }
 
         // Controleer welke spots al geboekt zijn
         $already_booked = VB_DB::get_booked_spot_ids( $layout_id );
@@ -284,6 +363,10 @@ class VB_REST_API {
 
         foreach ( $data['spot_ids'] as $spot_id ) {
             $spot_id = absint( $spot_id );
+            if ( ! VB_DB::spot_exists( $spot_id ) ) {
+                $skipped[] = $spot_id;
+                continue;
+            }
             if ( in_array( (string) $spot_id, $already_booked, true ) ) {
                 $skipped[] = $spot_id;
                 continue;
@@ -295,8 +378,8 @@ class VB_REST_API {
                 'customer_name'  => $customer_name,
                 'customer_email' => $customer_email,
                 'customer_phone' => $customer_phone,
-                'booking_status' => 'pending',
-                'notes'          => $notes,
+                'booking_status_id' => VB_DB::get_booking_status_id_by_name( 'pending' ),
+                'notes'             => $notes,
             ) );
 
             if ( $id ) {
@@ -304,8 +387,11 @@ class VB_REST_API {
             }
         }
 
-        if ( empty( $booking_ids ) ) {
-            return new WP_Error( 'all_booked', 'All selected spots are already booked.', array( 'status' => 409 ) );
+        if ( empty( $booking_ids ) && ! empty( $skipped ) ) {
+            return new WP_Error( 'geen_boekingen', 'Geen van de geselecteerde spots kon worden geboekt. Ze bestaan niet of zijn al bezet.', array( 'status' => 409 ) );
+        }
+        if ( empty( $booking_ids ) && empty( $skipped ) ) {
+            return new WP_Error( 'geen_spots', 'Er zijn geen geldige spots meegestuurd.', array( 'status' => 400 ) );
         }
 
         // Stuur één admin mail en één klant mail met alle geboekte spots
@@ -332,21 +418,34 @@ class VB_REST_API {
         }
 
         if ( ! in_array( $status, $allowed, true ) ) {
-            return new WP_Error( 'invalid_status', 'Invalid status value.', array( 'status' => 400 ) );
+            return new WP_Error( 'invalid_status', 'Ongeldige statuswaarde.', array( 'status' => 400 ) );
         }
 
         VB_DB::update_booking_status( $id, $status );
         return rest_ensure_response( array( 'success' => true ) );
     }
 
+    // Haal alle boekingen op voor een layout (alleen admin)
     public static function get_bookings( $request ) {
         $layout_id = (int) $request['layout_id'];
         $bookings  = VB_DB::get_bookings_for_layout( $layout_id );
         return rest_ensure_response( $bookings );
     }
 
+    // Sla layout instellingen op (bijv. max spots per boeking)
+    public static function update_layout_settings( $request ) {
+        $layout_id = (int) $request['id'];
+        $data      = $request->get_json_params();
+
+        if ( isset( $data['max_spots'] ) ) {
+            update_post_meta( $layout_id, '_vb_max_spots_per_booking', absint( $data['max_spots'] ) ?: 10 );
+        }
+
+        return rest_ensure_response( array( 'success' => true ) );
+    }
+
     /* ------------------------------------------------------------------ */
-    /*  Email notification                                                  */
+    /*  E-mail notificaties                                                 */
     /* ------------------------------------------------------------------ */
 
     private static function send_admin_notification_bulk( $booking_ids, $layout_id, $customer_name, $customer_email, $customer_phone, $notes ) {
@@ -356,8 +455,10 @@ class VB_REST_API {
         $admin_email  = get_option( 'admin_email' );
 
         // Haal alle geboekte spots op
-        $spots_text = '';
-        $total      = 0.0;
+        $currency        = get_option( 'vb_currency_symbol', '€' );
+        $spots_rows_html = '';
+        $total           = 0.0;
+
         foreach ( $booking_ids as $booking_id ) {
             $row = $wpdb->get_row( $wpdb->prepare(
                 "SELECT s.label, s.price FROM " . VB_DB::spots_table() . " s
@@ -366,32 +467,34 @@ class VB_REST_API {
                 $booking_id
             ) );
             if ( $row ) {
-                $total       += (float) $row->price;
-                $spots_text  .= sprintf( "  - %s (€%s)\n", $row->label, number_format( (float) $row->price, 2, ',', '.' ) );
+                $total           += (float) $row->price;
+                $spots_rows_html .= sprintf(
+                    '<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">%s</td><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;">%s%s</td></tr>',
+                    esc_html( $row->label ),
+                    esc_html( $currency ),
+                    number_format( (float) $row->price, 2, ',', '.' )
+                );
             }
         }
 
-        $subject = sprintf( '[%s] Nieuwe boeking – %s (%d spot(s))', get_bloginfo( 'name' ), $customer_name, count( $booking_ids ) );
-        $body    = sprintf(
-            "Nieuwe boeking ontvangen:\n\nKlant: %s\nE-mail: %s\nTelefoon: %s\nLayout: %s\nNotes: %s\n\nGeboekte spots:\n%s\nTotaalprijs: €%s\n\nBeheer boekingen in WP Admin → Booking Layouts.",
-            $customer_name,
-            $customer_email,
-            $customer_phone,
-            $layout_title,
-            $notes,
-            $spots_text,
-            number_format( $total, 2, ',', '.' )
-        );
+        $count   = count( $booking_ids );
+        $subject = sprintf( 'Nieuwe boeking – %s – %d %s', $customer_name, $count, $count === 1 ? 'spot' : 'spots' );
 
-        wp_mail( $admin_email, $subject, $body );
+        ob_start();
+        include VB_PLUGIN_DIR . 'templates/email-admin-melding.php';
+        $body = ob_get_clean();
+
+        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+        wp_mail( $admin_email, $subject, $body, $headers );
     }
 
     private static function send_customer_notification_bulk( $booking_ids, $layout_id, $customer_name, $customer_email ) {
         global $wpdb;
 
-        $layout_title = get_the_title( $layout_id );
-        $spots_text   = '';
-        $total        = 0.0;
+        $layout_title   = get_the_title( $layout_id );
+        $currency       = get_option( 'vb_currency_symbol', '€' );
+        $spots_rows_html = '';
+        $total          = 0.0;
 
         foreach ( $booking_ids as $booking_id ) {
             $row = $wpdb->get_row( $wpdb->prepare(
@@ -401,39 +504,55 @@ class VB_REST_API {
                 $booking_id
             ) );
             if ( $row ) {
-                $total      += (float) $row->price;
-                $spots_text .= sprintf( "  - %s (€%s)\n", $row->label, number_format( (float) $row->price, 2, ',', '.' ) );
+                $total           += (float) $row->price;
+                $spots_rows_html .= sprintf(
+                    '<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">%s</td><td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;">%s%s</td></tr>',
+                    esc_html( $row->label ),
+                    esc_html( $currency ),
+                    number_format( (float) $row->price, 2, ',', '.' )
+                );
             }
         }
 
-        $subject = sprintf( 'Boekingsbevestiging – %s (%d spot(s))', $layout_title, count( $booking_ids ) );
-        $body    = sprintf(
-            "Bedankt voor je boeking, %s!\n\nLayout: %s\n\nGeboekte spots:\n%s\nTotaalprijs: €%s\nStatus: In afwachting\n\nJe ontvangt een bericht zodra je boeking is bevestigd.",
-            $customer_name,
-            $layout_title,
-            $spots_text,
-            number_format( $total, 2, ',', '.' )
-        );
+        $count   = count( $booking_ids );
+        $subject = sprintf( 'Boekingsbevestiging – %s – %d %s', $layout_title, $count, $count === 1 ? 'spot' : 'spots' );
 
-        wp_mail( $customer_email, $subject, $body );
+        ob_start();
+        include VB_PLUGIN_DIR . 'templates/email-klant-bevestiging.php';
+        $body = ob_get_clean();
+
+        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+        wp_mail( $customer_email, $subject, $body, $headers );
     }
 
     private static function send_admin_notification( $booking_data, $booking_id ) {
-        $admin_email = get_option( 'admin_email' );
-        $subject     = sprintf(
-            '[%s] New Booking #%d – %s',
+        global $wpdb;
+
+        $admin_email  = get_option( 'admin_email' );
+        $layout_title = get_the_title( $booking_data['layout_id'] );
+
+        $spot = $wpdb->get_row( $wpdb->prepare(
+            "SELECT label, price FROM " . VB_DB::spots_table() . " WHERE id = %d",
+            $booking_data['spot_id']
+        ) );
+
+        $spot_label = $spot ? $spot->label : 'Spot #' . $booking_data['spot_id'];
+        $spot_price = $spot ? number_format( (float) $spot->price, 2, ',', '.' ) : '0,00';
+
+        $subject = sprintf(
+            '[%s] Nieuwe boeking #%d – %s',
             get_bloginfo( 'name' ),
             $booking_id,
             $booking_data['customer_name']
         );
         $body = sprintf(
-            "New booking received:\n\nBooking ID: %d\nCustomer: %s\nEmail: %s\nPhone: %s\nSpot ID: %d\nLayout ID: %d\nNotes: %s\n\nManage bookings in WP Admin → Booking Layouts.",
-            $booking_id,
+            "Nieuwe boeking ontvangen:\n\nKlant: %s\nE-mail: %s\nTelefoon: %s\nLayout: %s\nSpot: %s\nPrijs: €%s\nNotes: %s\n\nBeheer boekingen in WP Admin → Booking Layouts.",
             $booking_data['customer_name'],
             $booking_data['customer_email'],
             $booking_data['customer_phone'],
-            $booking_data['spot_id'],
-            $booking_data['layout_id'],
+            $layout_title,
+            $spot_label,
+            $spot_price,
             $booking_data['notes']
         );
 

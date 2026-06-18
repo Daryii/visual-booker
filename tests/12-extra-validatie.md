@@ -1,0 +1,90 @@
+# 12. Boeking aanmaken – Extra validatie
+
+**Bestand:** `includes/class-vb-rest-api.php`
+
+---
+
+## Test 12.1 – Al geboekte spot opnieuw boeken
+
+**Endpoint:** `POST /visual-booker/v1/bookings/bulk`
+
+**Actie:**
+- Zoek een spot ID dat al geboekt is (rode spot op de frontend).
+- Stuur via de browser console een request:
+
+```js
+fetch('/wp-json/visual-booker/v1/bookings/bulk', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-WP-Nonce': vbPublic.nonce
+    },
+    body: JSON.stringify({
+        spot_ids: [GEBOEKTE_SPOT_ID],
+        layout_id: JOUW_LAYOUT_ID,
+        customer_name: 'Jan de Vries',
+        customer_email: 'test@test.nl'
+    })
+}).then(r => r.json()).then(d => console.log(d));
+```
+
+**Verwachting:**
+- De API geeft een foutmelding terug: "Geen van de geselecteerde spots kon worden geboekt. Ze bestaan niet of zijn al bezet."
+- Er wordt geen nieuwe boeking aangemaakt.
+
+**Resultaat:** ☐ Geslaagd
+
+**Opmerking:** De API geeft een foutmelding terug:
+{code: 'geen_boekingen', message: 'Geen van de geselecteerde spots kon worden geboekt. Ze bestaan niet of zijn al bezet.', data: {…}}
+en er wordt geen nieuwe boeking aangemaakt. 
+
+---
+
+## Test 12.2 – Ongeldige status bij boeking bijwerken
+
+**Endpoint:** `PATCH /visual-booker/v1/booking/{id}/status`
+
+**Actie:**
+- Open de browser console op de **admin builder pagina** (niet de frontend).
+- Voer het volgende uit:
+
+```js
+fetch('/wp-json/visual-booker/v1/booking/BESTAAND_BOEKING_ID/status', {
+    method: 'PATCH',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-WP-Nonce': vbAdmin.nonce
+    },
+    body: JSON.stringify({ status: 'ongeldig' })
+}).then(r => r.json()).then(d => console.log(d));
+```
+
+**Verwachting:**
+- De API geeft een foutmelding terug: "Ongeldige statuswaarde."
+- De boeking status verandert niet.
+
+**Resultaat:** ☐ Geslaagd
+
+**Opmerking:** De boekingstatus is niet veranderd. Tijdens deze test is een nieuwe bug ontdekt: de statuswijzigings logica werkt niet correct.
+
+---
+
+## Test 12.3 – Alle spots opslaan via bulk endpoint
+
+**Endpoint:** `POST /visual-booker/v1/spots/bulk`
+
+**Actie:**
+- Ga naar de admin builder.
+- Bewerk de positie of label van meerdere spots.
+- Klik op "Save All Spots".
+- Ververs de pagina.
+
+**Verwachting:**
+- Alle spots worden opgeslagen.
+- De statusbalk toont "All spots saved ✓".
+- Na verversen zijn alle wijzigingen zichtbaar.
+
+**Resultaat:** ☐ Geslaagd 
+
+**Opmerking:** Alle spots worden opgeslagen, de statusbalk toont "All spots saved ✓"
+En na het verversen zijn alle wijzigingen zichbaar.

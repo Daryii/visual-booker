@@ -78,6 +78,10 @@
     box-sizing: border-box;
 }
 
+.vb-spot--circle {
+    border-radius: 50%;
+}
+
 .vb-spot:hover {
     box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0073aa;
     z-index: 20;
@@ -86,6 +90,24 @@
 .vb-spot.vb-spot--selected {
     box-shadow: 0 0 0 2px #fff, 0 0 0 4px #d63638;
     z-index: 30;
+}
+
+.vb-spot.vb-spot--booked {
+    background-color: #ef5350 !important;
+    opacity: 0.7;
+    cursor: default;
+}
+
+.vb-spot.vb-spot--locked {
+    background-color: #9E9E9E !important;
+    opacity: 0.6;
+    cursor: default;
+}
+
+.vb-spot.vb-spot--maintenance {
+    background-color: #C8BA6A !important;
+    opacity: 0.8;
+    cursor: default;
 }
 
 .vb-spot .vb-spot-label {
@@ -115,6 +137,12 @@
 .vb-spot.vb-spot--selected .vb-resize-handle {
     background: #fff;
     box-shadow: -1px -1px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Shape picker */
+#vb-shape-picker {
+    display: inline-flex;
+    gap: 6px;
 }
 
 /* Spot editor panel */
