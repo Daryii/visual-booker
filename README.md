@@ -1,145 +1,116 @@
-# Visual Booker – WordPress Booking Plugin (Starter Kit)
+# Visual Booker – WordPress Boekingsplugin
 
-This is a starter WordPress plugin that lets you upload any image (a floor plan, a market map, a venue layout) and place bookable spots on it. Visitors can then click on available spots and submit a booking through a simple form.
+Een WordPress-plugin waarmee je een afbeelding (een plattegrond, marktkaart, of locatie-layout) kunt uploaden en daarop boekbare spots kunt plaatsen. Bezoekers kunnen vervolgens op beschikbare spots klikken en via een simpel formulier een boeking plaatsen.
 
-We built this as a foundation for you to learn from and extend. The core flow works end to end, but there's plenty of room to improve it and add features.
+De plugin is begonnen als een starter kit met een basis boekingsflow. Vanaf daar heb ik (Daryi) zelf verder gebouwd: e-mailbevestigingen bij elke statuswijziging, beveiliging tegen XSS, een admin-canvas die de status van elke spot duidelijk toont, bulk-acties voor prijzen en max-spots, en diverse bugfixes. Het resultaat is een werkend geheel plugin.
 
-It's inspired by [SeatReg](https://wordpress.org/plugins/seatreg/), but written from scratch.
-
----
-
-## Getting Started
-
-1. Drop the `visual-booker/` folder into `wp-content/plugins/`.
-2. Activate it from the Plugins page in WP Admin.
-3. Head to Booking Layouts and create a new one. Give it a title and upload a background image.
-4. Use the "Add Spot" button to start placing spots on the image. You can drag them around, resize them, and edit their label, price, color, and type.
-5. Hit "Save All Spots" when you're happy with the layout.
-6. Copy the shortcode from the sidebar (something like `[visual_booker id="42"]`) and paste it into any page or post.
-7. That's it - visitors can now select spots and book them.
+Geïnspireerd door [SeatReg](https://wordpress.org/plugins/seatreg/), maar volledig opnieuw geschreven.
 
 ---
 
-## How the Plugin is Structured
+## Aan de slag
+
+1. Zet de `visual-booker/` map in `wp-content/plugins/`.
+2. Activeer de plugin via de Plugins-pagina in WP Admin.
+3. Ga naar Booking Layouts en maak een nieuwe layout. Geef een titel en upload een achtergrondafbeelding.
+4. Gebruik de "Add Spot" knop om spots op de afbeelding te plaatsen. Je kunt ze verslepen, verkleinen, en hun label, prijs en type bewerken.
+5. Klik op "Save All Spots" zodra je tevreden bent met de layout.
+6. Kopieer de shortcode uit de zijbalk (bijvoorbeeld `[visual_booker id="42"]`) en plak deze in een pagina of bericht.
+7. Klaar — bezoekers kunnen nu spots selecteren en boeken.
+
+---
+
+## Structuur van de plugin
 
 ```
 visual-booker/
-├── visual-booker.php              Main plugin file. Registers hooks and loads assets.
+├── visual-booker.php                      Hoofdbestand. Registreert hooks en laadt assets.
 ├── includes/
-│   ├── class-vb-db.php            Database tables and all the CRUD functions for spots and bookings.
-│   ├── class-vb-post-type.php     The "Booking Layout" custom post type, plus the admin meta boxes.
-│   ├── class-vb-rest-api.php      All the REST API endpoints that the front-end and builder talk to.
-│   └── class-vb-shortcode.php     The [visual_booker] shortcode that renders the public booking view.
+│   ├── class-vb-db.php                    Databasetabellen en alle CRUD-functies voor spots en boekingen.
+│   ├── class-vb-post-type.php             Het "Booking Layout" custom post type, plus de admin meta boxes.
+│   ├── class-vb-rest-api.php              Alle REST API endpoints waarmee de front-end en builder communiceren.
+│   └── class-vb-shortcode.php             De [visual_booker] shortcode die de publieke boekingsweergave rendert.
 ├── templates/
-│   └── front-end.php              The HTML template visitors see when the shortcode loads.
+│   ├── front-end.php                      De HTML-template die bezoekers zien wanneer de shortcode laadt.
+│   ├── email-klant-bevestiging.php        E-mail naar de klant na het plaatsen van een boeking.
+│   ├── email-klant-goedgekeurd.php        E-mail naar de klant zodra de admin de boeking goedkeurt.
+│   ├── email-klant-geannuleerd.php        E-mail naar de klant zodra de admin de boeking annuleert.
+│   └── email-admin-melding.php            E-mail naar de admin bij een nieuwe boeking.
 ├── admin/
-│   ├── css/admin.css              Styles for the drag-and-drop builder.
-│   └── js/admin.js                All the builder logic: dragging, resizing, editing, saving spots.
+│   ├── css/admin.css                      Stijlen voor de drag-and-drop builder.
+│   └── js/admin.js                        Alle builder-logica: slepen, verkleinen, bewerken, spots opslaan.
 ├── public/
-│   ├── css/public.css             Styles for the front-end booking interface.
-│   └── js/public.js               Spot selection, modal, and booking form submission.
+│   ├── css/public.css                     Stijlen voor de front-end boekingsinterface.
+│   └── js/public.js                       Spot-selectie, modal, en formulierverzending.
+├── tests/                                  Handmatige testcases per onderdeel, met resultaten en conclusies.
 └── README.md
 ```
 
-### A Few Design Notes
+### Een paar ontwerpkeuzes
 
-**Why custom database tables instead of post meta?** Spots and bookings are structured, queryable data. Custom tables make it much easier to filter, join, and count records compared to the meta table.
+**Waarom eigen databasetabellen in plaats van post meta?** Spots en boekingen zijn gestructureerde, doorzoekbare data. Eigen tabellen maken filteren, joinen en tellen veel makkelijker dan met de meta-tabel.
 
-**Why percentage-based positioning?** Spot positions are stored as percentages of the image dimensions, so layouts stay responsive across screen sizes without any extra work.
+**Waarom percentage-gebaseerde positionering?** Spot-posities worden opgeslagen als percentages van de afbeeldingsafmetingen, zodat layouts responsief blijven op elk schermformaat zonder extra werk.
 
-**Why jQuery?** It ships with WordPress, so there are no extra dependencies. You're welcome to swap it out for vanilla JS, React, or Vue as a learning exercise.
+**Waarom jQuery?** Dat zit al in WordPress, dus geen extra dependencies nodig. Je mag het gerust vervangen door vanilla JS, React of Vue als leeroefening.
 
-**How does the booking flow work?** A visitor selects one or more spots, clicks "Book Now", fills in a short form, and submits. Each selected spot creates a separate booking via the REST API. The admin gets an email notification and can approve or cancel bookings from the layout editor.
+**Hoe werkt de boekingsflow?** Een bezoeker selecteert één of meer spots, klikt op "Book Now", vult een kort formulier in en verstuurt het. Elke geselecteerde spot wordt een eigen boeking via de REST API. De admin krijgt een e-mailmelding en kan boekingen goedkeuren of annuleren vanuit de layout-editor — de klant ontvangt daarna ook automatisch een e-mail.
 
 ---
 
-## Database Tables
+## Databasetabellen
 
-The plugin creates two tables on activation:
+De plugin maakt bij activatie vijf tabellen aan, allemaal in één keer via `dbDelta()`:
 
-**wp_vb_spots** stores each bookable spot: its position, size, label, type (seat, table, zone, etc.), price, color, and status (open, locked, or maintenance).
+**wp_vb_spots** bevat elke boekbare spot: positie, grootte, label, type, prijs, en status.
 
-**wp_vb_bookings** stores each booking: which spot, which layout, the customer's name/email/phone, the booking status (pending, approved, or cancelled), and any notes.
+**wp_vb_bookings** bevat elke boeking: welke spot, welke layout, naam/e-mail/telefoon van de klant, boekingsstatus, en eventuele notities.
+
+**wp_vb_spot_types**, **wp_vb_spot_statuses** en **wp_vb_booking_statuses** zijn lookup-tabellen — vaste lijstjes (zoals "open", "locked", "maintenance" of "pending", "approved", "cancelled") waar spots en bookings naar verwijzen via een ID.
 
 ---
 
 ## REST API
 
-All endpoints live under `/wp-json/visual-booker/v1/`. The public ones don't require authentication. The admin ones check that the user has the `edit_posts` capability.
+Alle endpoints staan onder `/wp-json/visual-booker/v1/`. De publieke endpoints vereisen geen authenticatie. De admin-endpoints controleren of de gebruiker de `edit_posts` capability heeft.
 
-| Method | Endpoint | Who can use it | What it does |
+| Methode | Endpoint | Wie mag het gebruiken | Wat het doet |
 |---|---|---|---|
-| GET | /spots/{layout_id} | Anyone | Returns all spots for a layout, with a flag showing which ones are already booked |
-| POST | /spot | Admin | Creates or updates a single spot |
-| POST | /spots/bulk | Admin | Saves all spots at once |
-| DELETE | /spot/{id} | Admin | Removes a spot |
-| POST | /booking | Anyone | Submits a new booking |
-| PATCH | /booking/{id}/status | Admin | Changes a booking's status (approve, cancel, etc.) |
-| GET | /bookings/{layout_id} | Admin | Lists all bookings for a layout |
+| GET | /spots/{layout_id} | Iedereen | Geeft alle spots van een layout terug, met een vlag die aangeeft welke al geboekt zijn |
+| POST | /spot | Admin | Maakt of werkt één spot bij |
+| POST | /spots/bulk | Admin | Slaat alle spots in één keer op |
+| DELETE | /spot/{id} | Admin | Verwijdert een spot |
+| POST | /booking | Iedereen | Verstuurt een nieuwe boeking |
+| POST | /bookings/bulk | Iedereen | Verstuurt meerdere boekingen (één per geselecteerde spot) in één request |
+| PATCH | /booking/{id}/status | Admin | Wijzigt de status van een boeking (approve, cancel) en mailt de klant hierover |
+| GET | /bookings/{layout_id} | Admin | Toont alle boekingen van een layout |
+| POST | /layout/{id}/settings | Admin | Slaat layout-instellingen op, zoals max spots per boeking |
 
 ---
 
-## Things You Can Build Next
+## Codeerrichtlijnen
 
-These are roughly ordered from simpler to more involved. Pick whatever interests you.
+Een paar dingen om in gedachten te houden:
 
-**Straightforward improvements:**
-
-- Add circle-shaped spots alongside the existing rectangles (hint: it's mostly CSS).
-- Send a confirmation email to the customer, not just the admin.
-- Add a button to export bookings as a CSV file.
-- Let admins define custom legends (like "VIP" in gold, "Regular" in green, "Accessible" in blue) and display them on the front end.
-- Auto-number spots when placing them in bulk.
-
-**Medium-effort features:**
-
-- Support multiple rooms or sections per layout, with tabs to switch between them (like SeatReg does).
-- Add zoom and pan for large layouts, especially on mobile.
-- Let admins define custom form fields per layout (e.g., "T-shirt size" or "Dietary preference"), stored in the booking's meta_json column.
-- Set booking limits: max spots per booking, max bookings per email address, or time-based availability windows.
-- Use the WordPress Heartbeat API to update spot availability in real time without refreshing the page.
-- Add a "Duplicate Layout" button that clones a layout and all its spots.
-- Add undo/redo support in the builder.
-
-**Bigger projects:**
-
-- Integrate a payment gateway (Razorpay, Stripe, or WooCommerce) so bookings are only confirmed after payment.
-- Rebuild the front end in React or Vue instead of jQuery.
-- Replace the DOM-based builder with an HTML5 Canvas or Fabric.js implementation; this matters when a layout has hundreds of spots.
-- Create pre-built templates (theater, classroom, bus, restaurant) that users can start from instead of building from scratch.
-- Generate QR codes on booking confirmation that can be scanned for check-in.
-- Add a calendar/scheduling mode so spots can be booked for specific dates and times.
-- Build a Gutenberg block as an alternative to the shortcode.
-- Make the whole booking flow keyboard-navigable and screen-reader friendly.
+- Saniteer altijd input en escape altijd output. Gebruik `sanitize_text_field()`, `sanitize_email()`, `esc_html()`, `esc_attr()`, enzovoort. Vertrouw nooit wat uit de browser komt.
+- Gebruik `$wpdb->prepare()` voor elke databasequery met door de gebruiker aangeleverde waarden. Geen uitzonderingen.
+- Geef alles (functies, classes, CSS-klassen, JS-variabelen) een `vb_` of `vb-` prefix om botsingen met andere plugins te voorkomen.
+- Wrap alle tekst die de gebruiker ziet in `__()` of `esc_html__()` met het `'visual-booker'` text domain, zodat de plugin vertaald kan worden.
+- Houd JS en CSS in hun eigen bestanden. Geen inline scripts of stijlen.
+- Comment je code, vooral alles dat niet vanzelf spreekt in de builder- of API-logica.
 
 ---
 
-## Coding Guidelines
+## Testen en debuggen
 
-A few things to keep in mind while working on this:
+Zet een lokale WordPress-installatie op (LocalWP, XAMPP, of Docker werken allemaal goed). Activeer de plugin, maak een layout met een paar spots, plaats die op een pagina, en probeer te boeken vanuit een incognito-venster.
 
-- Always sanitize input and escape output. Use `sanitize_text_field()`, `sanitize_email()`, `esc_html()`, `esc_attr()`, and so on. Never trust what comes from the browser.
-- Use `$wpdb->prepare()` for every database query that includes user-supplied values. No exceptions.
-- Prefix everything (functions, classes, CSS classes, JS variables) with `vb_` or `vb-` to avoid collisions with other plugins.
-- Wrap all user-facing strings in `__()` or `esc_html__()` with the `'visual-booker'` text domain so the plugin can be translated.
-- Keep JS and CSS in their own files. No inline scripts or styles.
-- Comment your code, especially anything non-obvious in the builder or API logic.
+Zet `WP_DEBUG` en `WP_DEBUG_LOG` aan in je `wp-config.php` om fouten vroeg op te sporen. Gebruik het Network-tabblad van de browser DevTools om REST API requests te bekijken. Je kunt de API ook direct in de browser aanroepen (bijvoorbeeld `GET /wp-json/visual-booker/v1/spots/42`) om te zien hoe de data eruitziet.
+
+Als er iets niet klopt met de data, check de `wp_vb_spots` en `wp_vb_bookings` tabellen in phpMyAdmin.
 
 ---
 
-## Testing and Debugging
+## Nog één ding
 
-Set up a local WordPress install (LocalWP, XAMPP, or Docker all work fine). Activate the plugin, create a layout with a handful of spots, embed it on a page, and try booking from an incognito window.
-
-Turn on `WP_DEBUG` and `WP_DEBUG_LOG` in your `wp-config.php` so you can catch errors early. Use the browser's DevTools Network tab to watch REST API requests go back and forth. You can also hit the API directly in your browser (for example, `GET /wp-json/visual-booker/v1/spots/42`) to see what the data looks like.
-
-If something looks wrong with the data, check the `wp_vb_spots` and `wp_vb_bookings` tables in phpMyAdmin.
-
----
-
-## One More Thing
-
-The starter uses Indian Rupees for price display. If you need a different currency, search for the rupee sign and `en-IN` in `public/js/public.js` and update them. Ideally, you'd build a settings page where the admin can pick their currency - that's another good task to take on.
-
-## Nieuw
-First official commit from Daryi
+Het valutasymbool kan worden ingesteld onder Booking Layouts → Instellingen. De getalnotatie (decimaal/duizendtal-scheidingstekens) volgt automatisch de taal van de WordPress site via `get_locale()`, dus dat hoeft niet apart geconfigureerd te worden.
