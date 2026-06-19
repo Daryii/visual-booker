@@ -17,6 +17,11 @@
     let isDragging = false;
     let gridSize = 5; // raster grootte in procenten
 
+    // Voorkomt dat de achtergrondafbeelding zelf gesleept kan worden (in elke browser)
+    $canvas.on('dragstart', '#vb-bg-image', function (e) {
+        e.preventDefault();
+    });
+
     /* ================================================================== */
     /*  1. Afbeelding kiezen (WP Media)                                    */
     /* ================================================================== */
@@ -471,6 +476,41 @@
                 },
             });
         }, 1000);
+    });
+
+    $('#vb-toggle-bulk-price').on('click', function () {
+        $(this).toggleClass('vb-grid-is-active');
+        $('#vb-bulk-price').toggle($(this).hasClass('vb-grid-is-active'));
+    });
+
+    $('#vb-bulk-price').on('change', function () {
+        const price = parseFloat($(this).val());
+        if (isNaN(price) || price < 0) return;
+
+        if (!confirm('Weet je het zeker? Dit overschrijft de prijs van alle ' + spots.length + ' spots.')) {
+            return;
+        }
+
+        spots.forEach(function (spot) {
+            spot.price = price;
+        });
+
+        $.ajax({
+            url: API + 'spots/bulk',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ spots: spots }),
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-WP-Nonce', NONCE);
+            },
+            success: function () {
+                showStatus('Prijs voor alle spots opgeslagen ✓');
+                loadSpots();
+            },
+            error: function () {
+                showStatus('Fout bij opslaan ✗');
+            },
+        });
     });
 
     /* ================================================================== */

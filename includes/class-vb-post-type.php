@@ -106,6 +106,9 @@ class VB_Post_Type {
                         <button type="button" class="button" id="vb-toggle-max-spots">
                             🎯 <?php esc_html_e( 'Max spots per boeking', 'visual-booker' ); ?>
                         </button>
+                        <button type="button" class="button" id="vb-toggle-bulk-price">
+                            💰 <?php esc_html_e( 'Prijs voor alle spots', 'visual-booker' ); ?>
+                        </button>
                         <span id="vb-save-status"></span>
                     </div>
                     <select id="vb-grid-size" style="display:none;">
@@ -117,13 +120,16 @@ class VB_Post_Type {
                     <input type="number" id="vb-max-spots-per-booking" name="vb_max_spots_per_booking" min="1" style="width:70px; display:none;"
                         title="<?php esc_attr_e( 'Max spots per boeking', 'visual-booker' ); ?>"
                         value="<?php echo esc_attr( get_post_meta( $post->ID, '_vb_max_spots_per_booking', true ) ?: 10 ); ?>" />
+                    <input type="number" id="vb-bulk-price" min="0" step="0.01" style="width:90px; display:none;"
+                        title="<?php esc_attr_e( 'Prijs voor alle spots', 'visual-booker' ); ?>"
+                        placeholder="0.00" />
                 </div>
 
                 <!-- Canvas / bouwgebied -->
                 <div id="vb-canvas-wrap">
                     <div id="vb-canvas" data-layout-id="<?php echo esc_attr( $post->ID ); ?>">
                         <?php if ( $image_url ) : ?>
-                            <img src="<?php echo esc_url( $image_url ); ?>" id="vb-bg-image" alt="" />
+                            <img src="<?php echo esc_url( $image_url ); ?>" id="vb-bg-image" alt="" draggable="false" />
                         <?php else : ?>
                             <div id="vb-placeholder">
                                 <p><?php esc_html_e( '← Choose a background image to start placing spots.', 'visual-booker' ); ?></p>
@@ -199,7 +205,9 @@ class VB_Post_Type {
             return;
         }
 
-        $bookings = VB_DB::get_bookings_for_layout( $post->ID );
+        $bookings = array_filter( VB_DB::get_bookings_for_layout( $post->ID ), function( $b ) {
+            return $b->booking_status !== 'cancelled';
+        } );
         if ( empty( $bookings ) ) {
             echo '<p>' . esc_html__( 'No bookings yet.', 'visual-booker' ) . '</p>';
             return;
@@ -222,7 +230,7 @@ class VB_Post_Type {
                 <tr data-booking-id="<?php echo esc_attr( $b->id ); ?>">
                     <td><?php echo esc_html( $b->id ); ?></td>
                     <td><?php echo esc_html( $b->spot_label ?: '#' . $b->spot_id ); ?></td>
-                    <td><?php echo esc_html( $b->customer_name ); ?></td>
+                    <td title="<?php echo esc_attr( $b->customer_name ); ?>"><?php echo esc_html( $b->customer_name ); ?></td>
                     <td><?php echo esc_html( $b->customer_email ); ?></td>
                     <td><span class="vb-status vb-status--<?php echo esc_attr( $b->booking_status ); ?>"><?php echo esc_html( ucfirst( $b->booking_status ) ); ?></span></td>
                     <td><?php echo esc_html( $b->created_at ); ?></td>

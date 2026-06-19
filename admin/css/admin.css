@@ -203,6 +203,17 @@
 }
 
 /* Bookings table */
+#vb-bookings-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+#vb-bookings-table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 #vb-bookings-table .vb-status {
     display: inline-block;
     padding: 2px 8px;
