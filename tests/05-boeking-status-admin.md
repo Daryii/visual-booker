@@ -42,4 +42,4 @@
 
 **Resultaat:** ☐ Mislukt
 
-**Opmerking:** De test is mislukt. De status verandert wel naar "Cancelled" en na het auto-verversen verdwijnt de boeking uit de tabel, maar na het verversen van de pagina wordt de cancelled boeking weer getoond in plaats van verwijderd.
+**Opmerking:** De test is mislukt. De status verandert wel naar "Cancelled" en na het auto-verversen verdwijnt de boeking uit de tabel, maar na het verversen van de pagina wordt de cancelled boeking weer getoond in plaats van dat het verdwijnt.

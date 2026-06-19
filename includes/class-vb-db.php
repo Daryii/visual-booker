@@ -244,6 +244,17 @@ PRIMARY KEY (id)
         return $wpdb->get_results( $wpdb->prepare( $sql, ...$params ) );
     }
 
+    public static function get_booking( $booking_id ) {
+        global $wpdb;
+        return $wpdb->get_row( $wpdb->prepare(
+            "SELECT b.*, s.label AS spot_label, s.price AS spot_price
+             FROM " . self::bookings_table() . " b
+             LEFT JOIN " . self::spots_table() . " s ON b.spot_id = s.id
+             WHERE b.id = %d",
+            absint( $booking_id )
+        ) );
+    }
+
     public static function update_booking_status( $booking_id, $status_name ) {
         global $wpdb;
         $status_id = self::get_booking_status_id_by_name( $status_name );

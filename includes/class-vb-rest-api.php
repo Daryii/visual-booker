@@ -238,6 +238,15 @@ class VB_REST_API {
             }
         }
 
+        // HTML tags blokkeren in naam en notities (vóór de lengte-check, anders strip sanitizen de tag al weg)
+        if ( $data['customer_name'] !== wp_strip_all_tags( $data['customer_name'] ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de naam.', array( 'status' => 400 ) );
+        }
+        $notes_raw = $data['notes'] ?? '';
+        if ( $notes_raw !== wp_strip_all_tags( $notes_raw ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de notities.', array( 'status' => 400 ) );
+        }
+
         // Naam lengte valideren
         $customer_name_length = mb_strlen( trim( $data['customer_name'] ) );
         if ( $customer_name_length < 2 || $customer_name_length > 255 ) {
@@ -265,15 +274,6 @@ class VB_REST_API {
         $booked = VB_DB::get_booked_spot_ids( (int) $data['layout_id'] );
         if ( in_array( (string) $data['spot_id'], $booked, true ) ) {
             return new WP_Error( 'already_booked', 'This spot is already booked.', array( 'status' => 409 ) );
-        }
-
-        // HTML tags blokkeren in naam en notities
-        if ( $data['customer_name'] !== wp_strip_all_tags( $data['customer_name'] ) ) {
-            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de naam.', array( 'status' => 400 ) );
-        }
-        $notes_raw = $data['notes'] ?? '';
-        if ( $notes_raw !== wp_strip_all_tags( $notes_raw ) ) {
-            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de notities.', array( 'status' => 400 ) );
         }
 
         $booking_data = array(
@@ -321,7 +321,17 @@ class VB_REST_API {
             }
         }
 
-        $layout_id      = absint( $data['layout_id'] );
+        $layout_id = absint( $data['layout_id'] );
+
+        // HTML tags blokkeren in naam en notities (vóór de lengte-check, anders strip sanitizen de tag al weg)
+        if ( $data['customer_name'] !== wp_strip_all_tags( $data['customer_name'] ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de naam.', array( 'status' => 400 ) );
+        }
+        $notes_raw = $data['notes'] ?? '';
+        if ( $notes_raw !== wp_strip_all_tags( $notes_raw ) ) {
+            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de notities.', array( 'status' => 400 ) );
+        }
+
         $customer_name  = sanitize_text_field( $data['customer_name'] );
         $customer_name_length = mb_strlen( trim( $customer_name ) );
         if ( $customer_name_length < 2 || $customer_name_length > 255 ) {
@@ -331,14 +341,6 @@ class VB_REST_API {
         $customer_email = sanitize_email( $data['customer_email'] );
         if ( ! is_email( $customer_email ) ) {
             return new WP_Error( 'invalid_email', 'Ongeldig e-mailadres.', array( 'status' => 400 ) );
-        }
-        // HTML tags blokkeren in naam en notities
-        if ( $data['customer_name'] !== wp_strip_all_tags( $data['customer_name'] ) ) {
-            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de naam.', array( 'status' => 400 ) );
-        }
-        $notes_raw = $data['notes'] ?? '';
-        if ( $notes_raw !== wp_strip_all_tags( $notes_raw ) ) {
-            return new WP_Error( 'invalid_field', 'HTML tags zijn niet toegestaan in de notities.', array( 'status' => 400 ) );
         }
 
         $customer_phone = sanitize_text_field( $data['customer_phone'] ?? '' );
@@ -421,8 +423,50 @@ class VB_REST_API {
             return new WP_Error( 'invalid_status', 'Ongeldige statuswaarde.', array( 'status' => 400 ) );
         }
 
+        $booking = VB_DB::get_booking( $id );
         VB_DB::update_booking_status( $id, $status );
+
+        if ( $booking ) {
+            if ( $status === 'approved' ) {
+                self::send_approval_notification( $booking );
+            } elseif ( $status === 'cancelled' ) {
+                self::send_cancellation_notification( $booking );
+            }
+        }
+
         return rest_ensure_response( array( 'success' => true ) );
+    }
+
+    private static function send_approval_notification( $booking ) {
+        $layout_title = get_the_title( $booking->layout_id );
+        $customer_name = $booking->customer_name;
+        $spot_label    = $booking->spot_label ?: '#' . $booking->spot_id;
+        $price         = (float) $booking->spot_price;
+        $currency      = get_option( 'vb_currency_symbol', '€' );
+
+        $subject = sprintf( 'Boeking goedgekeurd – %s', $layout_title );
+
+        ob_start();
+        include VB_PLUGIN_DIR . 'templates/email-klant-goedgekeurd.php';
+        $body = ob_get_clean();
+
+        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+        wp_mail( $booking->customer_email, $subject, $body, $headers );
+    }
+
+    private static function send_cancellation_notification( $booking ) {
+        $layout_title  = get_the_title( $booking->layout_id );
+        $customer_name = $booking->customer_name;
+        $spot_label    = $booking->spot_label ?: '#' . $booking->spot_id;
+
+        $subject = sprintf( 'Boeking geannuleerd – %s', $layout_title );
+
+        ob_start();
+        include VB_PLUGIN_DIR . 'templates/email-klant-geannuleerd.php';
+        $body = ob_get_clean();
+
+        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+        wp_mail( $booking->customer_email, $subject, $body, $headers );
     }
 
     // Haal alle boekingen op voor een layout (alleen admin)
@@ -477,8 +521,7 @@ class VB_REST_API {
             }
         }
 
-        $count   = count( $booking_ids );
-        $subject = sprintf( 'Nieuwe boeking – %s – %d %s', $customer_name, $count, $count === 1 ? 'spot' : 'spots' );
+        $subject = sprintf( 'Nieuwe boeking - %s', $layout_title );
 
         ob_start();
         include VB_PLUGIN_DIR . 'templates/email-admin-melding.php';
@@ -514,8 +557,7 @@ class VB_REST_API {
             }
         }
 
-        $count   = count( $booking_ids );
-        $subject = sprintf( 'Boekingsbevestiging – %s – %d %s', $layout_title, $count, $count === 1 ? 'spot' : 'spots' );
+        $subject = sprintf( 'Boeking bevestigd - %s', $layout_title );
 
         ob_start();
         include VB_PLUGIN_DIR . 'templates/email-klant-bevestiging.php';
